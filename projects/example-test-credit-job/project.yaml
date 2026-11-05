@@ -1,0 +1,20 @@
+# For the existing BUILT-IN CPU pilot, NOT an OCI image, actual ML or financial service.
+# Placeholder signing key, URL and hash: replace source claims before external use.
+project_id: shared-cat-mathematics
+title: A Bounded Cooperative Computation
+source_repo: https://example.org/public-cats
+source_commit: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+category: open_science
+purposes: [open_knowledge]
+commercial: false
+contributor_allowlist: []
+contributor_denylist: []
+financial:
+  model: test_credits
+  asset_id: polyc.compute.test.v1
+  credits_per_verified_task: 1
+work:
+  kind: sha256_chain_v1
+  tasks: 5
+  iterations: 100
+  seed: catnap

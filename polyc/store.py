@@ -43,7 +43,23 @@ class Store:
             CREATE TABLE IF NOT EXISTS events (
                id INTEGER PRIMARY KEY AUTOINCREMENT, at REAL NOT NULL,
                node_id TEXT, job_id TEXT, kind TEXT NOT NULL, detail TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS submissions (
+               id TEXT NOT NULL, revision INTEGER NOT NULL, bundle_digest TEXT NOT NULL,
+               signed_bundle TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'staged',
+               staged_at REAL NOT NULL, PRIMARY KEY(id,revision));
+            CREATE TABLE IF NOT EXISTS contribution_receipts (
+               seq INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT NOT NULL,
+               receipt_json TEXT NOT NULL, prev_sha256 TEXT NOT NULL, receipt_sha256 TEXT NOT NULL,
+               UNIQUE(project_id,receipt_sha256));
+            CREATE INDEX IF NOT EXISTS idx_receipts_project ON contribution_receipts(project_id,seq);
             ''')
+        from .credits import CreditLedger
+        self._credits = CreditLedger(self)
+
+    # Deliberately separate financial ledger with the same SQLite transaction boundary.
+    @property
+    def credits(self):
+        return self._credits
 
     def event(self, kind: str, detail: str, node_id: str | None = None, job_id: str | None = None):
         self.db.execute('INSERT INTO events(at,node_id,job_id,kind,detail) VALUES(?,?,?,?,?)',
@@ -102,6 +118,11 @@ class Store:
                     signed = SignedProject.model_validate_json(j['signed_project'])
                     if compatible(constitution, signed.project, node_id):
                         continue
+                    financial = signed.project.financial
+                    if financial and financial.model == 'test_credits':
+                        if not self.credits.job_funded(j['id'], financial.asset_id,
+                              financial.credits_per_verified_task * signed.project.work.tasks):
+                            continue
                     # Cooperative fairness: nodes with fewer allocated or completed tasks go first.
                     counts = self.db.execute('''SELECT n.id, COUNT(t.id) cnt FROM nodes n
                         LEFT JOIN tasks t ON t.node_id=n.id AND t.job_id=?
@@ -157,6 +178,8 @@ class Store:
                     self.db.execute('UPDATE tasks SET status="done",digest=?,duration=?,result_time=? WHERE id=?',
                                     (digest_value, duration, time.time(), task_id))
                     self.event('task_completed', task_id, node_id, t['job_id'])
+                    self._record_contribution(t['job_id'], task_id, node_id, digest_value,
+                                              duration, signed_row['signed_project'])
                 else:
                     self.db.execute('UPDATE tasks SET status="pending",node_id=NULL,lease_id=NULL,lease_until=NULL,fail_reason=? WHERE id=?',
                                     (reason[:200], task_id))
@@ -210,3 +233,61 @@ class Store:
             rows = self.db.execute('SELECT status,COUNT(*) cnt FROM tasks GROUP BY status').fetchall()
             n = self.db.execute('SELECT COUNT(*) FROM nodes WHERE revoked=0').fetchone()[0]
             return {'nodes': n, **{f'tasks_{r["status"]}': r['cnt'] for r in rows}}
+
+    def stage_submission(self, signed):
+        """Store a signed declaration for review; does NOT queue or execute OCI work."""
+        from .submission import submission_digest
+        project = signed.submission.manifest
+        with self.lock:
+            self.db.execute('INSERT INTO submissions(id,revision,bundle_digest,signed_bundle,staged_at) '
+                            'VALUES(?,?,?,?,?)',
+                            (project.metadata.project_id, project.metadata.revision,
+                             submission_digest(signed.submission), signed.model_dump_json(), time.time()))
+            self.event('submission_staged', f'{project.metadata.project_id}: rev {project.metadata.revision}',
+                       job_id=project.metadata.project_id)
+
+    def get_submission(self, project_id: str, revision: int):
+        with self.lock:
+            row = self.db.execute('SELECT id,revision,bundle_digest,state,staged_at,signed_bundle '
+                                  'FROM submissions WHERE id=? AND revision=?', (project_id,revision)).fetchone()
+            return dict(row) if row else None
+
+    def _record_contribution(self, project_id, task_id, node_id, result, duration_reported, signed_project_json):
+        """Coordinator-authored provisional credit; not payment, not cryptographic compute proof."""
+        from .crypto import digest
+        last = self.db.execute('SELECT receipt_sha256 FROM contribution_receipts '
+                               'WHERE project_id=? ORDER BY seq DESC LIMIT 1', (project_id,)).fetchone()
+        prev = last['receipt_sha256'] if last else '0'*64
+        entry = {'schema':'polyc.contribution/v0alpha1',
+                 'project_id':project_id, 'task_id':task_id, 'node_id':node_id,
+                 'timestamp':time.time(), 'verified_result_sha256':result,
+                 'verification':'independent_builtin_reference',
+                 'seconds_self_reported':duration_reported,
+                 'credit_units_provisional':1,
+                 'signed_project_sha256':digest(json.loads(signed_project_json)),
+                 'note':'No money; duration is not independently metered'}
+        receipt_hash = digest({'previous':prev,'entry':entry})
+        self.db.execute('INSERT INTO contribution_receipts(project_id,receipt_json,prev_sha256,receipt_sha256) '
+                        'VALUES(?,?,?,?)', (project_id,json.dumps(entry,sort_keys=True),prev,receipt_hash))
+
+    def ledger(self, project_id):
+        """Verify the local hash chain against current DB contents. Externally anchor roots for tamper evidence."""
+        from .crypto import digest
+        with self.lock:
+            rows=self.db.execute('SELECT receipt_json,prev_sha256,receipt_sha256 '
+                                 'FROM contribution_receipts WHERE project_id=? ORDER BY seq', (project_id,)).fetchall()
+            prev='0'*64
+            entries=[]
+            valid=True
+            for r in rows:
+                try:
+                    e=json.loads(r['receipt_json'])
+                    if r['prev_sha256'] != prev or r['receipt_sha256'] != digest({'previous':prev,'entry':e}):
+                        valid=False
+                    prev=r['receipt_sha256']
+                    entries.append({'receipt':e,'prev_sha256':r['prev_sha256'], 'receipt_sha256':prev})
+                except (ValueError, TypeError):
+                    valid=False
+            return {'project_id':project_id, 'credits_provisional':sum(x['receipt'].get('credit_units_provisional',0)
+                        for x in entries), 'receipts':entries, 'chain_valid_locally':valid,
+                    'root_sha256':prev, 'externally_anchored':False, 'monetary_settlement':'not_implemented'}

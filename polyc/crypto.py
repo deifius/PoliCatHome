@@ -28,7 +28,7 @@ def sign_project(project: Project, private_file: str) -> SignedProject:
     if not isinstance(priv, Ed25519PrivateKey):
         raise ValueError('expected Ed25519 private key')
     pub = priv.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw).hex()
-    sig = priv.sign(canonical(project.model_dump(mode='json'))).hex()
+    sig = priv.sign(canonical(project.model_dump(mode='json', exclude_none=True))).hex()
     return SignedProject(project=project, signer_pubkey=pub, signature=sig)
 
 
@@ -37,7 +37,7 @@ def verify_project(signed: SignedProject, trusted_signers: list[str]) -> bool:
         return False
     try:
         Ed25519PublicKey.from_public_bytes(bytes.fromhex(signed.signer_pubkey)).verify(
-            bytes.fromhex(signed.signature), canonical(signed.project.model_dump(mode='json'))
+            bytes.fromhex(signed.signature), canonical(signed.project.model_dump(mode='json', exclude_none=True))
         )
         return True
     except (InvalidSignature, ValueError):

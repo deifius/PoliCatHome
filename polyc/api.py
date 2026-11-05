@@ -5,15 +5,18 @@ import sqlite3
 from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.responses import PlainTextResponse
 from .models import NodeRegistration, SignedProject, LeaseRequest, TaskComplete, TaskFail
+from .submission import SignedSubmission, verify_submission, submission_digest
 from .policy import validate_constitution, ConstitutionError
 from .crypto import verify_project
 from .store import Store
+from .credits import (CreditError, TestCreditAsset, SignedWalletEnrollment, IssueVerifiedCredit,
+                      AcceptedCreditTransfer, SignedWalletAction, SignedWalletView)
 
 
 def create_app(db_path: str, admin_token: str) -> FastAPI:
     if len(admin_token) < 24:
         raise ValueError('admin token must have at least 24 characters')
-    app = FastAPI(title='PolyC@home pilot coordinator', version='0.1.0')
+    app = FastAPI(title='PolyC@home pilot coordinator', version='0.3.0')
     store = Store(db_path)
     app.state.store = store
 
@@ -55,6 +58,102 @@ def create_app(db_path: str, admin_token: str) -> FastAPI:
         except sqlite3.IntegrityError as ex:
             raise HTTPException(409, 'job ID already exists') from ex
         return {'job_id': sp.project.project_id, 'accepted': True, 'tasks': sp.project.work.tasks}
+
+    @app.post('/api/submissions', dependencies=[Depends(admin)])
+    def stage_submission(signed: SignedSubmission):
+        # This is **not** /api/jobs. It stages OCI project paperwork for later review.
+        # Artifact, registry, source, SBOM and claimed purpose are NOT fetched/verified.
+        if not verify_submission(signed):
+            raise HTTPException(422, 'invalid project submission signature')
+        try:
+            store.stage_submission(signed)
+        except sqlite3.IntegrityError as ex:
+            raise HTTPException(409, 'project submission revision already staged') from ex
+        return {'project_id': signed.submission.manifest.metadata.project_id,
+                'revision': signed.submission.manifest.metadata.revision,
+                'bundle_digest': submission_digest(signed.submission),
+                'state': 'staged', 'executable': False}
+
+    @app.get('/api/submissions/{project_id}/{revision}', dependencies=[Depends(admin)])
+    def submission_status(project_id: str, revision: int):
+        record = store.get_submission(project_id, revision)
+        if record is None:
+            raise HTTPException(404, 'submission not found')
+        return {'project_id':record['id'],'revision':record['revision'],
+                'bundle_digest':record['bundle_digest'],'state':record['state'],
+                'staged_at':record['staged_at'],'executable':False}
+
+    @app.get('/api/ledger/{project_id}', dependencies=[Depends(admin)])
+    def contribution_ledger(project_id: str):
+        return store.ledger(project_id)
+
+    # TEST-ONLY: no money, cash conversion, guaranteed compute, or external payouts.
+    # The operator controls issuance but cannot sign owner transfers.
+    def credit_call(fn):
+        try:
+            return fn()
+        except CreditError as ex:
+            raise HTTPException(409, str(ex)) from ex
+        except sqlite3.IntegrityError as ex:
+            raise HTTPException(409, 'duplicate or conflicting credit record') from ex
+
+    @app.get('/api/finance/providers')
+    def finance_provider_catalogue():
+        from .payment_adapters import catalogue
+        return catalogue()
+
+    @app.get('/api/credits/network')
+    def credit_network():
+        return {'ledger_id':store.credits.ledger_id, 'test_only':True,
+                'scope':'single-coordinator-local-clearing'}
+
+    @app.post('/api/credits/assets', dependencies=[Depends(admin)])
+    def add_credit_asset(asset: TestCreditAsset):
+        return credit_call(lambda: store.credits.create_asset(asset))
+
+    @app.post('/api/credits/wallets', dependencies=[Depends(admin)])
+    def add_credit_wallet(signed: SignedWalletEnrollment):
+        return credit_call(lambda: store.credits.enroll(signed))
+
+    @app.post('/api/credits/wallet-view')
+    def view_own_wallet(signed: SignedWalletView):
+        return credit_call(lambda: store.credits.authorized_wallet_view(signed))
+
+    @app.get('/api/credits/wallets/{wallet_id}', dependencies=[Depends(admin)])
+    def credit_wallet(wallet_id: str):
+        return credit_call(lambda: store.credits.wallet_info(wallet_id))
+
+    @app.get('/api/credits/assets/{asset_id}', dependencies=[Depends(admin)])
+    def credit_asset(asset_id: str):
+        return credit_call(lambda: store.credits.supply(asset_id))
+
+    @app.post('/api/credits/issue', dependencies=[Depends(admin)])
+    def issue_credits(req: IssueVerifiedCredit):
+        return credit_call(lambda: store.credits.issue_from_receipt(req))
+
+    @app.post('/api/credits/transfers')
+    def transfer_credits(req: AcceptedCreditTransfer):
+        return credit_call(lambda: store.credits.transfer(req))
+
+    @app.post('/api/credits/reservations')
+    def reserve_credits(req: SignedWalletAction):
+        return credit_call(lambda: store.credits.reserve(req))
+
+    @app.post('/api/credits/reservations/release')
+    def release_credits(req: SignedWalletAction):
+        return credit_call(lambda: store.credits.release(req))
+
+    @app.post('/api/credits/reservations/{reservation_id}/settle', dependencies=[Depends(admin)])
+    def settle_credits(reservation_id: str):
+        return credit_call(lambda: store.credits.settle(reservation_id))
+
+    @app.get('/api/credits/reservations/{reservation_id}', dependencies=[Depends(admin)])
+    def credit_reservation(reservation_id: str):
+        return store.credits.reservation(reservation_id) or {'state': 'not_found'}
+
+    @app.get('/api/credits/audit', dependencies=[Depends(admin)])
+    def audit_credits():
+        return store.credits.audit()
 
     @app.post('/api/lease')
     def lease(req: LeaseRequest, token: str = Depends(bearer)):

@@ -1,7 +1,7 @@
 """Strict public protocol structures. There is no arbitrary command field."""
 from __future__ import annotations
 from typing import Literal
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 
 
 class Strict(BaseModel):
@@ -15,6 +15,20 @@ class WorkSpec(Strict):
     seed: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._-]+$")
 
 
+class ProjectFinancial(Strict):
+    model: Literal["volunteer", "test_credits"] = "volunteer"
+    asset_id: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9._-]{3,79}$")
+    credits_per_verified_task: int = Field(default=0, ge=0, le=10000)
+
+    @model_validator(mode="after")
+    def validate_funding(self):
+        if self.model == "volunteer" and (self.asset_id is not None or self.credits_per_verified_task):
+            raise ValueError("volunteer work has no promised credit payments")
+        if self.model == "test_credits" and (not self.asset_id or not self.credits_per_verified_task):
+            raise ValueError("credit-funded work must specify asset and cost per verified task")
+        return self
+
+
 class Project(Strict):
     project_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{2,63}$")
     title: str = Field(min_length=4, max_length=120)
@@ -25,6 +39,7 @@ class Project(Strict):
     commercial: bool = False
     contributor_allowlist: list[str] = Field(default_factory=list)
     contributor_denylist: list[str] = Field(default_factory=list)
+    financial: ProjectFinancial | None = None
     work: WorkSpec
 
     @field_validator('purposes', 'contributor_allowlist', 'contributor_denylist')

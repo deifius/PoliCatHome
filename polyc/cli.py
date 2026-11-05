@@ -12,10 +12,11 @@ from .models import Project
 from .worker import Worker
 from .provision import provision
 from .chronicle import describe
+from .submission import load_submission, submission_digest, sign_submission, SignedSubmission, verify_submission
 
 
 def main():
-    ap = argparse.ArgumentParser(prog='polyc', description='PolyC@home v0.1 CPU pilot')
+    ap = argparse.ArgumentParser(prog='polyc', description='PolyC@home v0.3 CPU pilot and OCI declaration intake')
     sub = ap.add_subparsers(dest='command', required=True)
     serve = sub.add_parser('serve')
     serve.add_argument('--db', default='runtime/pilot.sqlite')
@@ -48,11 +49,41 @@ def main():
     chron = sub.add_parser('chronicle', help='what did the cats do while I was gone?')
     chron.add_argument('--config', required=True)
     chron.add_argument('--server', default='http://127.0.0.1:8765')
+    val = sub.add_parser('validate-submission', help='validate project.yaml + polic.yaml offline; NO image verification')
+    val.add_argument('--dir', required=True)
+    sig = sub.add_parser('sign-submission', help='sign both project.yaml and polic.yaml as a single immutable contract')
+    sig.add_argument('--dir', required=True)
+    sig.add_argument('--private', required=True)
+    sig.add_argument('--out', required=True)
+    send_bundle = sub.add_parser('submit-submission', help='stage signed OCI project metadata only; never runs images')
+    send_bundle.add_argument('--signed', required=True)
+    send_bundle.add_argument('--server', default='http://127.0.0.1:8765')
+    send_bundle.add_argument('--admin-token-file', required=True)
+    audit = sub.add_parser('ledger', help='read coordinator hash-linked provisional contribution receipts')
+    audit.add_argument('--project-id', required=True)
+    audit.add_argument('--server', default='http://127.0.0.1:8765')
+    audit.add_argument('--admin-token-file', required=True)
     pause = sub.add_parser('pause', help='pause locally regardless of coordinator status')
     pause.add_argument('--config', required=True)
     pause.add_argument('--resume', action='store_true')
 
+    from .economy_cli import add_parser as add_economy_parser
+    add_economy_parser(sub)
+    sub.add_parser('economy-demo', help='run five-cat test-credit pilot locally; no real money')
+
     args = ap.parse_args()
+    if args.command == 'economy-demo':
+        from .economy_demo import run_economy_demo
+        r=run_economy_demo()
+        print(json.dumps({'volunteer_tasks':25,'paid_test_tasks':5,
+            'issued_credits':r['supply']['issued_units'],
+            'wallet_balances':r['balances_after_settlement'],
+            'audit_valid_locally':r['audit']['valid_locally']},indent=2))
+        return
+    if args.command.startswith('credit-'):
+        from .economy_cli import execute as execute_economy
+        execute_economy(args)
+        return
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
     if args.command == 'serve':
         import uvicorn
@@ -94,6 +125,31 @@ def main():
             headers={'Authorization':f'Bearer {c["token"]}'},timeout=5)
         r.raise_for_status()
         print(describe(r.json()))
+    elif args.command == 'validate-submission':
+        bundle = load_submission(args.dir)
+        print(json.dumps({'valid_schema': True, 'bundle_digest': submission_digest(bundle),
+                          'image':bundle.manifest.artifact.image,
+                          'artifact_verified':False, 'execution_enabled':False},indent=2))
+    elif args.command == 'sign-submission':
+        bundle = load_submission(args.dir)
+        signed = sign_submission(bundle,args.private)
+        Path(args.out).write_text(signed.model_dump_json(indent=2)+'\n')
+        print('signed:', args.out, 'bundle_digest:', submission_digest(bundle))
+    elif args.command == 'submit-submission':
+        signed = SignedSubmission.model_validate_json(Path(args.signed).read_text())
+        if not verify_submission(signed):
+            ap.error('signature invalid; refused to submit')
+        token=Path(args.admin_token_file).read_text().strip()
+        r=httpx.post(args.server+'/api/submissions',headers={'Authorization':f'Bearer {token}'},
+                     json=signed.model_dump(mode='json'),timeout=5)
+        r.raise_for_status()
+        print(json.dumps(r.json(),indent=2))
+    elif args.command == 'ledger':
+        token=Path(args.admin_token_file).read_text().strip()
+        r=httpx.get(args.server+'/api/ledger/'+args.project_id,
+                    headers={'Authorization':f'Bearer {token}'},timeout=5)
+        r.raise_for_status()
+        print(json.dumps(r.json(),indent=2))
     elif args.command == 'pause':
         c=yaml.safe_load(Path(args.config).read_text())
         flag=Path(c.get('pause_file',f'runtime/{c["node_id"]}.pause'))
