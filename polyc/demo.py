@@ -18,8 +18,8 @@ from .models import Project
 from .worker import Worker
 
 
-def constitution(public_key: str, cpu_sensor_required=False) -> dict:
-    return {
+def constitution(public_key: str, cpu_sensor_required=False, wallet_pubkey: str | None = None) -> dict:
+    config = {
         'apiVersion': 'polic.home/v0alpha1', 'kind': 'NodeConstitution',
         'metadata': {'name': 'pilot-node', 'revision': 1},
         'spec': {
@@ -41,6 +41,14 @@ def constitution(public_key: str, cpu_sensor_required=False) -> dict:
             'reporting': {'chronicle_frequency': 'weekly', 'catnap_enabled': False}
         }
     }
+
+    if wallet_pubkey:
+        config['spec']['financial'] = {
+            'test_credits_enabled': True,
+            'wallet_pubkey':wallet_pubkey,
+            'accepted_assets':['polyc.compute.test.v1'],
+            'minimum_credits_per_task':1}
+    return config
 
 
 def run_demo(workdir: str | None = None, timeout: int = 35):

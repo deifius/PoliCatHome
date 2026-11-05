@@ -9,7 +9,7 @@
 
 PolyC@home is an open-source experiment in household-owned cooperative computation, drawing inspiration from SETI@home, Folding@home, GNU Hurd, and the cheerful impossibility of organizing cats. Owners retain the right to run their own work first, choose which projects their spare cycles support, and withdraw at any time. Project authors can also specify which contributors they consent to work with. Each side has a constitution.
 
-**Status: v0.1 runnable Linux CPU pilot.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It does not accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or pay contributors.** Five separate physical households have not yet been tested.
+**Status: v0.3 — runnable Linux CPU pilot, staged OCI project-submission protocol, and test-only transferable credit clearing.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
 
 ## Meet the household
 
@@ -18,6 +18,55 @@ PolyC@home is an open-source experiment in household-owned cooperative computati
 **HIRD — HIRD Isolated Resource Domain** is the name of the future disposable execution sandbox. For now, `HIRD/process` runs only one trusted bundled task with subprocess resource limits and Linux `nice +19`. `HIRD/Linux` (QEMU/KVM) is the next proposed backend; `HIRD/Hurd` is a capability-oriented research track, *not* a runtime dependency.
 
 **Nice Plus** refers to application-level priorities beyond Linux's `nice` range of -20 to +19. A worker process actually uses `nice +19`, plus a best-effort CPU duty cycle, host-side safety checks, and an immediate owner pause flag. None of those is a general solution to GPU preemption. The names are jokes; revocation isn't.
+
+## Submitting a project: OCI image + PoliC constitution + ledger
+
+Proposed projects have **two separate, signed YAML declarations**:
+
+- `project.yaml`: a public source repository pinned to a Git commit, an OCI/Docker-built image **pinned by SHA-256 digest**, a bounded work-sharding protocol, and declared resource needs.
+- `polic.yaml`: the project's own constitution: purpose, prohibited uses, commercial terms, contributor eligibility, mutual revocation, output licensing and contribution/revenue distribution.
+
+A third artifact is generated as computation occurs: a **contribution ledger** consisting of per-project hash-linked receipts. The built-in CPU pilot now records *provisional* contribution points for independently verified tasks. Separate v0.3 test-credit issuance requires an explicit operator action, issuer supply limit and a constitutionally opted-in wallet; contribution points are not automatically transferable credit balances. An actual revenue-sharing agreement would need additional contractual, metering and settlement controls.
+
+**Staging-only OCI path (unchanged in v0.3):**
+
+```bash
+# project.yaml and polic.yaml are illustrated in projects/example-render/.
+polyc validate-submission --dir projects/example-render
+# Create a new Ed25519 key pair and put the public key in polic.yaml before signing.
+polyc keygen --private runtime/owner.pem --public runtime/owner.pub
+polyc sign-submission --dir projects/example-render --private runtime/owner.pem \
+  --out runtime/signed-submission.json
+# With an already-running, authenticated local coordinator:
+polyc submit-submission --signed runtime/signed-submission.json \
+  --server http://127.0.0.1:8765 --admin-token-file runtime/admin-token.txt
+```
+
+The supplied example has **fake artifact/source hashes and a fake signer key**—replace them before signing. The submission endpoint returns `staged`, explicitly **not executable**. No code is fetched, reviewed, attested, scanned, or launched yet. Do not introduce `docker run` on the host as a shortcut: HIRD/Linux VM isolation must come first.
+
+See [project submission specification](docs/project-submissions.md), [contribution ledger and royalties](docs/contribution-ledger.md), and [example petition](projects/example-render/). Project-side sovereignty and owner-side sovereignty must be mutually compatible. *The author can petition for a cat; no cat is obliged to take the part.*
+
+## Transferable credits: the saucer exchange (v0.3)
+
+**The economics pilot is runnable, but no money moves.** Owners and project creators hold separate Ed25519 wallet identities and declare mutually compatible, test-only credit rules. An asset has a named issuer, supply cap, and an explicit disclaimer: it is **unbacked, nonconvertible, nonmonetary, and grants no guaranteed compute**. Real royalties, bank transfers, PayPal/Zelle/Patreon/Stripe integration, cashouts and legal compliance systems are **not implemented**.
+
+```bash
+python -m pip install -e '.[test]'
+python -m polyc.economy_demo     # or: polyc economy-demo
+```
+
+This local demonstration uses five distinct contributor identities and one project wallet:
+
+1. **25 verified volunteer tasks** → 25 test credits explicitly issued (five to each cat).
+2. Each cat and the project owner **both sign** a one-credit transfer → project wallet receives five.
+3. The project owner signs a new credit-priced five-task job and **reserves five credits** as its budget; the scheduler refuses unfunded paid work.
+4. Five verified paid tasks → the coordinator **settles five credits to the five workers**. Supply remains 25 and the clearing journal balances.
+
+The implementation uses integer-only, double-entry SQLite postings, atomic transaction commits, owner-signed wallet enrollment, two-party Ed25519 transfer signatures, strictly increasing sender nonces, expiration windows, **ledger-specific signature domains**, and a locally hash-linked transaction history. Cancelling paid work settles already verified tasks and refunds the remainder. A malicious clearing operator can still rewrite a local journal; there is **no independent ledger consensus or external root anchoring**.
+
+`GET /api/finance/providers` lists a provider-neutral declaration catalogue including PayPal, Patreon, manual Zelle/bank transfers, Stripe Connect, and custom adapters; **none is connected**. Staged project `polic.yaml` now accepts signed, non-executable financial disclosures (revenue streams, receipts basis, reporting cadence, payout rails, dispute windows). It does not verify receipts or execute payouts.
+
+See **[economic architecture, API, wallet CLI and security limits](docs/economics.md)** and the [signed test-credit project example](projects/example-test-credit-job/). All five participants in the test are simulated on one Linux machine, *not* five real households.
 
 ## Run the five-cat pilot
 
@@ -96,13 +145,13 @@ Pause is enforced by the **local worker** even if the coordinator is unreachable
 | **Conservation** | Explicitly bound energy and heat claims to *measured* facts |
 | **Care** | Protect people, hardware, households, and habitats |
 
-**Clarity before culpability.** Contributor identity, project intent, and culpability cannot be reliably inferred from source comments, a pseudonym, or a node's political labels. The pilot enforces *declared categories, purposes, allow/deny lists, and signed project assertions*—not automated moral certainty.
+**Credibility** is a companion C for any credit issuer: claims need a named issuer, explicit terms, and verifiable accounting, not assumed capacity or borrowed financial trust. **Clarity before culpability.** Contributor identity, project intent, and culpability cannot be reliably inferred from source comments, a pseudonym, or a node's political labels. The pilot enforces *declared categories, purposes, allow/deny lists, and signed project assertions*—not automated moral certainty.
 
 ### Mutual constitutional matching
 
 A project declares category, purposes, commercial terms, contributor allow/deny lists, a public source URL and pinned revision, and a **signed** deterministic workload manifest. The node declares approved categories, disallowed purposes, project signer public keys, resource bounds, and revocation rules. The coordinator matches both; the independent node **checks again** before execution. The pilot does not retrieve or verify that the declared source repository truly corresponds to the bundled code—the only executable artifact is the built-in, pinned `sha256_chain_v1` handler.
 
-See [`constitution.example.yaml`](constitution.example.yaml) for the **future-oriented** constitution sketch, and [`polyc/demo.py`](polyc/demo.py) for the schema actually enforced in the CPU pilot. The older example includes unsupported GPU and energy limits and must **not** be submitted verbatim to v0.1. The pilot rejects `energy.require_meter: true` and nonzero `gpu_utilization_percent_max` rather than pretending they are enforced. CPU temperature constraints are fail-closed when requested and a suitable host sensor is missing; the portable demo sets this threshold to `null` and therefore **does not claim thermal protection**.
+See [`constitution.example.yaml`](constitution.example.yaml) for the **future-oriented** constitution sketch, and [`polyc/demo.py`](polyc/demo.py) for the schema actually enforced in the CPU pilot. The older example includes unsupported GPU and energy limits and must **not** be submitted verbatim to the running CPU pilot. The pilot rejects `energy.require_meter: true` and nonzero `gpu_utilization_percent_max` rather than pretending they are enforced. CPU temperature constraints are fail-closed when requested and a suitable host sensor is missing; the portable demo sets this threshold to `null` and therefore **does not claim thermal protection**.
 
 ## Architecture
 
@@ -122,10 +171,12 @@ See [`constitution.example.yaml`](constitution.example.yaml) for the **future-or
          HIRD/process  HIRD/process  ...       ...         ...
 ```
 
-Each node retains its own constitution, owner pause flag, and trusted project signers. The coordinator stores node token **hashes**, active task leases, result digests, and an event log in SQLite. Ed25519 signs project declarations. An authenticated worker reports a result; the coordinator independently recomputes the deterministic answer before recording completion. This establishes the correctness of this *toy task*, **not** general-purpose verifiable computation. Tokens are not transferable trust certifications, and coordinator logs are not cryptographically immutable.
+Each node retains its own constitution, owner pause flag, and trusted project signers. The coordinator stores node token **hashes**, active task leases, result digests, a hash-linked provisional contribution ledger, and an event log in SQLite. Ed25519 signs project declarations. An authenticated worker reports a result; the coordinator independently recomputes the deterministic answer before recording completion. This establishes the correctness of this *toy task*, **not** general-purpose verifiable computation. Tokens are not transferable trust certifications, and coordinator logs are not cryptographically immutable.
 
 - **PoliC negotiator:** `polyc/policy.py` and `polyc/crypto.py`.
 - **PolyC coordinator and exchange:** `polyc/api.py`, `polyc/store.py`.
+- **Test-only credit clearing:** `polyc/credits.py` (wallets, issuance, signed transfers, reservations, payouts in test units); `polyc/economy_demo.py` (five-owner acceptance run).
+- **Provider-neutral financial declarations:** `polyc/submission.py`, `polyc/payment_adapters.py`. No real payments or payment SDKs.
 - **PolyC Daemon:** `polyc/worker.py` monitors consent, project cancellation, host activity, and owner pause.
 - **HIRD/process:** `polyc/hird.py`, `polyc/task_child.py` limit runtime, address space, and CPU priority for a bundled task only.
 - **Chronicle:** `polyc/chronicle.py`, `polyc chronicle`, authenticated `/api/chronicle/{node_id}`.
@@ -150,7 +201,11 @@ More detail: [HIRD architecture](docs/hird-architecture.md), [threat model](docs
 | HIRD/Linux QEMU/KVM VM isolation | **Not yet implemented** |
 | GNU Hurd HIRD guest research | **Planned** |
 | GPU scheduling, thermal VRAM limits, energy metering | **Not yet implemented** |
-| Arbitrary code, distributed ML, payments, blockchain | **Not yet implemented** |
+| OCI/PoliC manifest validation, signatures, staging-only intake | **Implemented; NOT executable** |
+| Project contribution receipts and provisional points | **Implemented for built-in CPU tasks only** |
+| Test-only issuer, 2-signature credit transfers, reservations, settlement | **Implemented; 5-owner pilot demo, noncash only** |
+| Signed project financial disclosures and provider adapter catalogue | **Staged metadata only; no provider integration** |
+| Arbitrary OCI execution, distributed ML, monetary payouts, public exchange, blockchain | **Not yet implemented** |
 
 This is a **research prototype**; do not run it with untrusted workloads or expose the API publicly. Running untrusted code inside an ordinary subprocess would not respect the architecture's security requirements. Physical and network tests on actual contributing households will be a separate milestone.
 

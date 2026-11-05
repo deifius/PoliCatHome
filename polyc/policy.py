@@ -35,6 +35,18 @@ def validate_constitution(c: dict) -> None:
         raise ConstitutionError('energy meter enforcement not implemented in pilot; deny by default')
     if s.get('nice_plus', {}).get('gpu_utilization_percent_max', 0):
         raise ConstitutionError('GPU workload enforcement not implemented in pilot')
+    financial = s.get('financial')
+    if financial is not None:
+        if not isinstance(financial, dict) or financial.get('test_credits_enabled') is not True:
+            raise ConstitutionError('only explicit test-credit financial opt-in supported')
+        pub = financial.get('wallet_pubkey', '')
+        if not (isinstance(pub, str) and len(pub) == 64 and all(ch in '0123456789abcdef' for ch in pub)):
+            raise ConstitutionError('node financial wallet Ed25519 public key required')
+        assets = financial.get('accepted_assets')
+        if not isinstance(assets,list) or not assets or any(not isinstance(a,str) for a in assets):
+            raise ConstitutionError('accepted credit assets must be declared')
+        if not (1 <= financial.get('minimum_credits_per_task',0) <= 10000):
+            raise ConstitutionError('minimum credit compensation must be 1..10000')
 
 
 def compatible(constitution: dict, project: Project, node_id: str) -> list[str]:
@@ -63,6 +75,15 @@ def compatible(constitution: dict, project: Project, node_id: str) -> list[str]:
         issues.append('missing public repository or pinned commit')
     if project.work.kind != 'sha256_chain_v1':
         issues.append('work type is not built in')
+    financial=project.financial
+    if financial and financial.model == 'test_credits':
+        options=s.get('financial',{})
+        if (options.get('test_credits_enabled') is not True or
+            financial.asset_id not in options.get('accepted_assets',[]) or
+            not options.get('wallet_pubkey')):
+            issues.append('node did not opt in to test-credit payment and wallet settlement')
+        if financial.credits_per_verified_task < options.get('minimum_credits_per_task', 1):
+            issues.append('task credit compensation below node constitutional minimum')
     return issues
 
 

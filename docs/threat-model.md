@@ -1,4 +1,4 @@
-# Security boundary and threat model (v0.1)
+# Security boundary and threat model (v0.3)
 
 > The guest was given a room, not the keys to the house. The pilot's room has no secure lock yet.
 
@@ -25,14 +25,17 @@
 
 - **No hostile-code isolation**: ordinary subprocesses share the host kernel and Python package path. DO NOT run untrusted code via HIRD/process.
 - **No transport security**: local HTTP development API is not suitable for remote household networks. Run behind authenticated TLS/SSH tunnel/private VPN before actual five-host pilot. Bind localhost by default.
-- **No signed receipts or log immutability**: SQLite event records can be modified by an administrator with database access. Ed25519 signs job declarations, not event history.
+- **No independent log immutability**: SQLite event records and the new hash-linked credit journal can be modified and rehashed by an administrator with database access. Ed25519 signs jobs, wallets, transfers and project reservations, but not an independently witnessed ledger checkpoint.
 - **No source-to-binary attestation**: the `source_repo` and `source_commit` fields are declarations. The running work is bundled with this installed version of PolyC, not fetched from that source repo.
 - **No device identity verification**: a node string plus secret bearer token identifies its role, not a person's beliefs or an independently audited identity.
 - **No whole-system energy or GPU thermal enforcement**: if requested, unsupported mandatory mechanisms must deny execution. There is no basis to calculate heat recovered or carbon avoided.
 - **No system-wide CPU quota guarantee**: the duty-cycle approach and `nice` are advisory under varied kernels/cgroup configurations. A hardened HIRD/Linux must use host-controlled cgroups and measure results.
 - **No perfect immediate stop**: the worker checks pause every ~60 ms during an assigned subprocess; scheduler and OS latency are not bounded as a real-time guarantee.
 - **No generalized result proof**: the coordinator can verify tiny known hash chains, not arbitrary AI inference or training results.
-- **No signed contributor reputation, automatic ethos verification, content moderation ML, global audit blockchain, or payments**.
+- **No signed contributor reputation, automatic ethos verification, content moderation ML, global audit blockchain, or real payments**. v0.3 credits are noncash test units with no contractual redemption rights.
+- **No public-grade economic identity, recovery or federation**: wallets have no revocation/recovery/rotation process, nor identity proof beyond a key and operator enrollment. Accounts are ledger-local, and the operator is a trusted sequencer.
+- **No guarantee of value, liquidity or earning rates**: test credits are not real GPU-hours and do not entitle holders to a particular node; owners can withdraw hardware consent. An asset issuer declaration is not proof of reserves.
+- **No live provider evidence**: PayPal/Patreon/Zelle/Stripe labels in a signed `polic.yaml` are assertions about intended money flows, not verified payment events or provider connectivity.
 
 ## Mandatory future negative tests before executing third-party code
 
