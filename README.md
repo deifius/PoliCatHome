@@ -132,6 +132,8 @@ Pause is enforced by the **local worker** even if the coordinator is unreachable
 
 ## The constitutional Cs
 
+**Thirteen Constitutional Cs** guide both sides of every agreement: those who offer computation and those who request it. The newer economic Cs extend the same mutual-sovereignty principles to credits, revenue, and settlement.
+
 | C | Obligation |
 |---|---|
 | **Consent** | Mutual opt-in, ongoing authorization, revocation |
@@ -139,13 +141,16 @@ Pause is enforced by the **local worker** even if the coordinator is unreachable
 | **Constitution** | Declare and version constraints in machine-readable form |
 | **Commons** | Open protocols, public-source aspirations, inspectable governance |
 | **Cooperation** | Independent participants make agreements, not submissions |
-| **Clarity** | Activity records and plain-language explanations |
+| **Clarity** | Activity records, plain-language explanations, and inspectable evidence |
 | **Culpability** | Investigate responsibility using evidence, rather than assuming guilt from participation |
-| **Correction** | Revocation, appeals, reproducibility, repair |
+| **Correction** | Revocation, appeals, reproducibility, repair, and auditable adjustments |
 | **Conservation** | Explicitly bound energy and heat claims to *measured* facts |
 | **Care** | Protect people, hardware, households, and habitats |
+| **Compensation** | Define fair, mutually accepted terms for rewards, rates, credit earnings, and revenue shares *before* work begins |
+| **Commerce** | Make value exchange, fees, payment methods, and settlement provider-independent, transparent, and reconcilable |
+| **Credibility** | Back each credit or financial claim with a named issuer, stated redemption terms, and independently checkable evidence |
 
-**Credibility** is a companion C for any credit issuer: claims need a named issuer, explicit terms, and verifiable accounting, not assumed capacity or borrowed financial trust. **Clarity before culpability.** Contributor identity, project intent, and culpability cannot be reliably inferred from source comments, a pseudonym, or a node's political labels. The pilot enforces *declared categories, purposes, allow/deny lists, and signed project assertions*—not automated moral certainty.
+**Clarity before culpability.** Contributor identity, project intent, and culpability cannot be reliably inferred from source comments, a pseudonym, or a node's political labels. The pilot enforces *declared categories, purposes, allow/deny lists, and signed project assertions*—not automated moral certainty. Likewise, today's noncash test credits demonstrate bookkeeping, **not** guaranteed compute capacity or real-money settlement; Compensation, Commerce, and Credibility are commitments the eventual production exchange must fulfill.
 
 ### Mutual constitutional matching
 
