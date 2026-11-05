@@ -1,0 +1,20 @@
+// In-process execution of the actual browser worker's WebCrypto loop (Node 22+).
+import { createHash, webcrypto } from 'node:crypto';
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+if (!globalThis.crypto) globalThis.crypto=webcrypto;
+const messages=[];
+globalThis.self={postMessage(msg){messages.push(msg);}};
+await import(pathToFileURL(path.resolve('polyc/web/compute-worker.js')));
+await globalThis.self.onmessage({data:{type:'run',seed:'cat',index:0,iterations:100,budget:30}});
+const done=messages.find(m=>m.type==='done');
+assert.ok(done,'browser worker did not complete');
+let state=Buffer.from('cat:0','utf-8');for(let i=0;i<100;i++)state=createHash('sha256').update(state).digest();
+assert.equal(done.digest,state.toString('hex'));
+assert.equal(messages.at(-1).type,'done');
+assert.ok(messages.some(m=>m.type==='progress'));
+messages.length=0;
+await globalThis.self.onmessage({data:{type:'run',seed:'cat',index:0,iterations:10001,budget:25}});
+assert.equal(messages.at(-1).type,'error');
+console.log('Browser WebCrypto compute-worker passed known-digest and workload-bound tests.');

@@ -42,3 +42,13 @@
 VM escape, kernel attack surface, no network egress without permission, filesystem secret and mount isolation, swap/core dump handling, syscall and GPU DMA attack paths, cgroup memory/CPU pressure, guest pause/kill during coordinator loss, stale sensors, power meter loss, VMs without nested virtualization, GPU passthrough revocation, socket and artifact injection, and secrets leaked through logs.
 
 A policy declaration is evidence that a participant *said* something, not proof of ethical behavior or legal responsibility. The owner remains sovereign even when the coordinator cannot be reached.
+
+## v0.4 web extension (additional boundary)
+
+The FastAPI server serves its own static HTML/CSS/JS with a restrictive CSP. One-use operator invitations (hashed at rest, expiry-bound and atomically consumed) authorize **enrollment** or **proposing a Cat**, not either job approval or universal contributor consent. Project proposals are Ed25519-signed and non-executable until operator review, and that review cannot bypass each contributor's trusted signer/category policy. Node-only telemetry is restricted to the node's token; global telemetry requires the admin credential. Keep admin credentials out of ordinary contributor sessions.
+
+Browser Catnap uses Web Crypto in a dedicated Web Worker for known SHA-256 tasks; it refuses source-upload execution. Browser enrollment rejects mandatory thermal sensor limits, GPU caps, and financial settlement contracts it cannot enforce. Browser CPU pacing is **not** a host-level quota. Chrome/Firefox/Safari may suspend or kill background jobs. This is not a hardened virtualization sandbox, and the word **Catbox** does not imply that untrusted OCI images run in v0.4.
+
+Theme imports are validated four-field JSON, not code. Full scene paradigms must go through source review before they are bundled, since JavaScript in the same origin could access other page state. The present CSP is defense-in-depth; do not assume browser extensions or compromised same-origin scripts cannot read session credentials. Proprietary Gibson/After Dark assets are not bundled.
+
+Unresolved: multi-tenant API rate limits and IP-based anti-abuse, CSRF/security of any future cookie auth, external access behind properly configured TLS, code-signing/review for extension uploads, public-presence privacy consent, manifest->source attestation, recovery/rotation of browser-owned identities, third-party code sandboxing, and cross-browser integration/security testing.
