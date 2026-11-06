@@ -16,7 +16,7 @@ from .submission import load_submission, submission_digest, sign_submission, Sig
 
 
 def main():
-    ap = argparse.ArgumentParser(prog='polyc', description='PolyC@home v0.3 CPU pilot and OCI declaration intake')
+    ap = argparse.ArgumentParser(prog='polyc', description='PolyC@home v0.4 CPU/Browser Catnap and OCI declaration intake')
     sub = ap.add_subparsers(dest='command', required=True)
     serve = sub.add_parser('serve')
     serve.add_argument('--db', default='runtime/pilot.sqlite')

@@ -75,3 +75,12 @@ If adding a new HIRD backend, implement `create`, `start`, `pause`, `stop`, `des
 PoliC = Candid Constitutional Consent; PolyC = Coordinated Computational Care. HIRD = HIRD Isolated Resource Domain. HIRDing C@s = decentralized coordination. PolyC Daemon = worker/host agent. Chronicle = measured activity. Catnap = a *future* truthful visualization. Nice Plus = application-level deference, **not** Linux nice greater than +19.
 
 Use original, occasional dry domestic quips; never make emergency messages, policy authorization, security outcomes or audit records depend on understanding a joke. The cats may be fanciful. The enforcement must not be.
+
+
+## v0.4 binding terminology and browser contribution
+
+- **Catnap** = contributing computation, **Create a Cat** = project authoring/submission, **Cat** = computational project/workload, **Catbox** = its sandboxed execution environment. Do not invert the roles.
+- Default Catnap scene is **Gibson** (blue-monolith homage to *Hackers*); all scenery must be attributable to authenticated data or explicitly labeled synthetic demonstration data. Other built-ins: Flying Cats, Flying Toasters, 3D Pipes and Chronicle Terminal.
+- Browser UI code is in `polyc/web/`, renderer SDK in `polyc/web/scenes/`, HTTP/invite/review routes in `polyc/browser.py`, and private SQLite extensions in `polyc/store.py`. See `docs/CATNAP-BROWSER.md` and `docs/SCENE-SDK.md`.
+- Never let unauthenticated visitors query live private Chronicle data. Never publish tokens or node constitutions inside scene snapshots. No imported executable skin/plugin code. Do not approve arbitrary image execution as if it were the known built-in SHA-256 operation.
+- Test `pytest -q`, `node scripts/test-browser-worker.mjs`, `node scripts/test-browser-protocol.mjs` for protocol compatibility. UI visual/browser reliability testing and five real physical browser participants remain explicitly outstanding.

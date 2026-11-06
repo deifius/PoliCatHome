@@ -9,7 +9,26 @@
 
 PolyC@home is an open-source experiment in household-owned cooperative computation, drawing inspiration from SETI@home, Folding@home, GNU Hurd, and the cheerful impossibility of organizing cats. Owners retain the right to run their own work first, choose which projects their spare cycles support, and withdraw at any time. Project authors can also specify which contributors they consent to work with. Each side has a constitution.
 
-**Status: v0.3 — runnable Linux CPU pilot, staged OCI project-submission protocol, and test-only transferable credit clearing.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
+**Status: v0.4 — the v0.3 Linux CPU/test-credit pilot plus a runnable browser Catnap, WebGL Gibson, extensible scenes, and an invited Create a Cat workshop.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
+
+## Catnap and Create a Cat: the browser experience (v0.4)
+
+**Catnap** means **contribute computing**. **Create a Cat** means **create/submit a computational project**. A **Cat** is that project/workload, and a **Catbox** is the execution sandbox for its computation. Cats do not represent worker machines. These names are intentional parts of the public API and UI.
+
+The coordinator now also serves a working browser app at **http://127.0.0.1:8765/** (when the coordinator is running). The **default Gibson scene** is a glowing blue WebGL 2 monolith city inspired by the supercomputer in the 1995 film *Hackers*. Its towers, intensity, associations and inspection panels are driven by **real consented nodes, leased tasks, independently verified completions and Chronicle events** once authenticated. The unauthenticated preview is synthetic, prominently labeled and never counted as work. Other bundled paradigms: **Flying Cats, Flying Toasters, 3D Pipes, Chronicle Terminal**. Users can export/import validated palette skins; developers can add entire reviewed scene plug-ins. Fullscreen browser visualization is **not** an installed operating-system screensaver.
+
+**Create a Cat** is an invitation-gated signed-project workshop. It signs the existing **bounded SHA-256 pilot** work locally with a Web Crypto Ed25519 key, then **stages** a proposal until an operator approves it. Contributor constitutions must independently trust the creator's signer key. OCI Catbox execution, arbitrary source uploads, GPUs/WebGPU computing, signed OCI artifact verification and actual household energy controls are still **not implemented**. Catnap's browser CPU worker runs the known builtin in a dedicated Web Worker; its CPU pacing is cooperative and cannot enforce hardware safety policies. The existing native Linux agent remains available.
+
+Read **[browser start and architecture](docs/CATNAP-BROWSER.md)** and **[skinnable screensaver/scene SDK](docs/SCENE-SDK.md)** for operator enrollment, five-browser workflow, optional developer theming and safety notes.
+
+```bash
+python -m pip install -e '.[test]'
+export POLYC_ADMIN_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(36))')"
+polyc serve --db runtime/browser.sqlite --host 127.0.0.1 --port 8765
+# Visit http://127.0.0.1:8765/ from a browser on this computer.
+```
+
+The initial public preview does not require credentials. To create actual Cats or register new Catnap volunteers, use the **Commons** operator panel to issue separate one-use invitations, not a shared administrator token. It is intended for **localhost or an HTTPS/VPN deployment with security review**, not for exposing this development server to the Internet.
 
 ## Meet the household
 
@@ -186,7 +205,7 @@ Each node retains its own constitution, owner pause flag, and trusted project si
 - **HIRD/process:** `polyc/hird.py`, `polyc/task_child.py` limit runtime, address space, and CPU priority for a bundled task only.
 - **Chronicle:** `polyc/chronicle.py`, `polyc chronicle`, authenticated `/api/chronicle/{node_id}`.
 - **Monitor:** authenticated `/metrics` endpoint for Prometheus; Grafana and Nagios remain integrations to build.
-- **Catnap:** proposed screensaver; no graphical UI yet. The cats decline to pretend that hashes are cinema.
+- **Catnap + Create a Cat browser:** `polyc/browser.py` and `polyc/web/`; live privacy-scoped WebGL Gibson/other scenes, consented Web Crypto CPU worker, signed proposal workshop. Preview events are labeled synthetic; no WebGPU compute or native OS screensaver installation.
 
 More detail: [HIRD architecture](docs/hird-architecture.md), [threat model](docs/threat-model.md), [milestones](docs/ROADMAP.md), [five-node acceptance](docs/pilot-acceptance.md).
 
@@ -195,6 +214,9 @@ More detail: [HIRD architecture](docs/hird-architecture.md), [threat model](docs
 | Capability | State |
 |---|---|
 | Five independently configured agents, one host | **Tested** |
+| Browser Catnap + Web Crypto deterministic CPU worker | **Implemented; unrestricted browser/hardware acceptance still pending** |
+| Default WebGL 2 Gibson plus 4 more scenes and importable JSON skins | **Implemented source; graphics/browser hardware acceptance pending** |
+| Create a Cat workshop with Ed25519 signatures, review and explicit contributor trust | **Implemented; approved built-in CPU tasks only** |
 | REST coordinator with durable queue and lease expiry | **Implemented** |
 | Ed25519 project signatures and trusted signer allowlist | **Implemented** |
 | Mutual declared-constitution matching | **Implemented** |

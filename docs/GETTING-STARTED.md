@@ -1,6 +1,6 @@
 # Getting started
 
-See the root README's verified `python -m polyc.demo` and manually managed five-owner tutorial.
+See the root README's verified `python -m polyc.demo` and manually managed five-owner tutorial. For the **Catnap browser** (including the default **Gibson** screensaver and **Create a Cat** project workshop), follow [CATNAP-BROWSER.md](CATNAP-BROWSER.md).
 
 ## Files and secrets
 

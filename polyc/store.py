@@ -47,6 +47,13 @@ class Store:
                id TEXT NOT NULL, revision INTEGER NOT NULL, bundle_digest TEXT NOT NULL,
                signed_bundle TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'staged',
                staged_at REAL NOT NULL, PRIMARY KEY(id,revision));
+            CREATE TABLE IF NOT EXISTS web_invites (
+               token_sha256 TEXT PRIMARY KEY, kind TEXT NOT NULL,
+               expires_at REAL NOT NULL, consumed_at REAL, created_at REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS cat_proposals (
+               id TEXT PRIMARY KEY, signed_project TEXT NOT NULL,
+               status TEXT NOT NULL DEFAULT 'staged', created_at REAL NOT NULL,
+               reviewed_at REAL, reviewer_note TEXT);
             CREATE TABLE IF NOT EXISTS contribution_receipts (
                seq INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT NOT NULL,
                receipt_json TEXT NOT NULL, prev_sha256 TEXT NOT NULL, receipt_sha256 TEXT NOT NULL,
@@ -291,3 +298,132 @@ class Store:
             return {'project_id':project_id, 'credits_provisional':sum(x['receipt'].get('credit_units_provisional',0)
                         for x in entries), 'receipts':entries, 'chain_valid_locally':valid,
                     'root_sha256':prev, 'externally_anchored':False, 'monetary_settlement':'not_implemented'}
+
+    # Browser/Commons extensions. Invitations are one-use and stored hashed.
+    def issue_invites(self, kind: str, count: int, ttl_seconds: int):
+        if kind not in ('catnap', 'create_cat') or not 1 <= count <= 20 or not 300 <= ttl_seconds <= 86400:
+            raise ValueError('invalid invitation parameters')
+        now = time.time()
+        result = []
+        with self.lock:
+            for _ in range(count):
+                raw = secrets.token_urlsafe(32)
+                self.db.execute('INSERT INTO web_invites VALUES(?,?,?,?,?)',
+                                (token_digest(raw), kind, now+ttl_seconds, None, now))
+                result.append(raw)
+            self.event('invites_created', f'{count} {kind} one-use invites issued')
+        return result
+
+    def _consume_invite(self, raw: str, kind: str):
+        entry = self.db.execute('SELECT kind,expires_at,consumed_at FROM web_invites WHERE token_sha256=?',
+                                (token_digest(raw),)).fetchone()
+        if not entry or entry['kind'] != kind or entry['consumed_at'] is not None or entry['expires_at'] <= time.time():
+            raise ValueError('invalid, expired, or already used invitation')
+        self.db.execute('UPDATE web_invites SET consumed_at=? WHERE token_sha256=?',
+                        (time.time(), token_digest(raw)))
+
+    def enroll_browser(self, ticket: str, registration):
+        with self.lock:
+            self.db.execute('BEGIN IMMEDIATE')
+            try:
+                self._consume_invite(ticket, 'catnap')
+                self.add_node(registration.node_id, registration.token, registration.constitution)
+                self.event('browser_node_joined', 'Browser Catnap enrollment', node_id=registration.node_id)
+                self.db.execute('COMMIT')
+            except BaseException:
+                self.db.execute('ROLLBACK')
+                raise
+
+    def propose_cat(self, ticket: str, signed: SignedProject):
+        with self.lock:
+            self.db.execute('BEGIN IMMEDIATE')
+            try:
+                self._consume_invite(ticket, 'create_cat')
+                self.db.execute('INSERT INTO cat_proposals(id,signed_project,created_at) VALUES(?,?,?)',
+                                (signed.project.project_id, signed.model_dump_json(), time.time()))
+                self.event('cat_proposed', f'{signed.project.title}: awaiting review', job_id=signed.project.project_id)
+                self.db.execute('COMMIT')
+            except BaseException:
+                self.db.execute('ROLLBACK')
+                raise
+
+    def list_cat_proposals(self):
+        with self.lock:
+            rows = self.db.execute('SELECT id,signed_project,status,created_at,reviewed_at,reviewer_note '
+                                   'FROM cat_proposals ORDER BY created_at DESC LIMIT 100').fetchall()
+            return [{'project_id': r['id'],
+                     'title': SignedProject.model_validate_json(r['signed_project']).project.title,
+                     'signer_pubkey': SignedProject.model_validate_json(r['signed_project']).signer_pubkey,
+                     'status':r['status'], 'created_at':r['created_at'],
+                     'reviewed_at':r['reviewed_at'], 'reviewer_note':r['reviewer_note']}
+                    for r in rows]
+
+    def get_cat_proposal(self, project_id: str):
+        with self.lock:
+            r = self.db.execute('SELECT * FROM cat_proposals WHERE id=?', (project_id,)).fetchone()
+            if not r:
+                return None
+            return {'project_id':r['id'], 'signed_project':json.loads(r['signed_project']),
+                    'status':r['status'], 'created_at':r['created_at'], 'reviewer_note':r['reviewer_note']}
+
+    def review_cat(self, project_id: str, approve: bool, note: str = ''):
+        with self.lock:
+            r = self.db.execute('SELECT * FROM cat_proposals WHERE id=?', (project_id,)).fetchone()
+            if not r:
+                raise KeyError('unknown Cat')
+            if r['status'] != 'staged':
+                raise ValueError('Cat already reviewed')
+            if approve:
+                # Only the built-in deterministic, independently verified work is executable.
+                self.add_job(SignedProject.model_validate_json(r['signed_project']))
+            self.db.execute('UPDATE cat_proposals SET status=?, reviewed_at=?,reviewer_note=? WHERE id=?',
+                            ('approved' if approve else 'rejected',time.time(),note[:250],project_id))
+            self.event('cat_approved' if approve else 'cat_rejected', note[:250] or 'Operator review', job_id=project_id)
+
+    def catnap_snapshot(self, node_id: str | None = None):
+        """Read-only, privacy-scoped scene feed. Never exposes credentials or constitutions."""
+        with self.lock:
+            if node_id:
+                nodes = self.db.execute('SELECT id,revoked,created_at FROM nodes WHERE id=?', (node_id,)).fetchall()
+                jobs = self.db.execute('''SELECT j.id,j.signed_project,j.status,j.created_at
+                    FROM jobs j WHERE EXISTS (SELECT 1 FROM tasks t
+                    WHERE t.job_id=j.id AND t.node_id=?) ORDER BY j.created_at DESC LIMIT 100''',(node_id,)).fetchall()
+                ev = self.db.execute('SELECT id,at,node_id,job_id,kind,detail FROM events WHERE node_id=? '
+                                     'ORDER BY id DESC LIMIT 80',(node_id,)).fetchall()
+            else:
+                nodes = self.db.execute('SELECT id,revoked,created_at FROM nodes ORDER BY created_at DESC LIMIT 200').fetchall()
+                jobs = self.db.execute('SELECT id,signed_project,status,created_at FROM jobs '
+                                       'ORDER BY created_at DESC LIMIT 100').fetchall()
+                ev = self.db.execute('SELECT id,at,node_id,job_id,kind,detail FROM events '
+                                     'ORDER BY id DESC LIMIT 80').fetchall()
+            project_ids = {j['id'] for j in jobs}
+            projects = []
+            for j in jobs:
+                if node_id:
+                    rows = self.db.execute('SELECT status,COUNT(*) total FROM tasks '
+                                           'WHERE job_id=? AND node_id=? GROUP BY status',(j['id'],node_id)).fetchall()
+                else:
+                    rows = self.db.execute('SELECT status,COUNT(*) total FROM tasks '
+                                           'WHERE job_id=? GROUP BY status',(j['id'],)).fetchall()
+                counts={r['status']:r['total'] for r in rows}
+                signed=SignedProject.model_validate_json(j['signed_project'])
+                projects.append({'id':j['id'], 'title':signed.project.title,
+                                 'category':signed.project.category, 'status':j['status'],
+                                 'tasks':counts, 'created_at':j['created_at']})
+            node_items=[]
+            for n in nodes:
+                tasks=self.db.execute('SELECT job_id,status,COUNT(*) total FROM tasks '
+                                      'WHERE node_id=? GROUP BY job_id,status',(n['id'],)).fetchall()
+                counts={}
+                for t in tasks:
+                    if t['job_id'] in project_ids:
+                        counts.setdefault(t['job_id'],{})[t['status']] = t['total']
+                node_items.append({'id': n['id'], 'revoked':bool(n['revoked']),
+                                   'projects':counts, 'created_at':n['created_at']})
+            total = {state:sum(p['tasks'].get(state,0) for p in projects)
+                     for state in ('pending','leased','done','failed')}
+            return {'schema':'polyc.catnap.snapshot/v1', 'mode':'live', 'scope':node_id or 'operator',
+                    'server_time':time.time(), 'counts':{'nodes':sum(not n['revoked'] for n in nodes),**total},
+                    'nodes':node_items, 'projects':projects,
+                    'events':[dict(row) for row in reversed(ev)],
+                    'note':'Verified tasks and worker self-reported durations; no verified thermal or power telemetry.'}

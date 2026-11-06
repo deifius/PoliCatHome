@@ -16,7 +16,7 @@ from .credits import (CreditError, TestCreditAsset, SignedWalletEnrollment, Issu
 def create_app(db_path: str, admin_token: str) -> FastAPI:
     if len(admin_token) < 24:
         raise ValueError('admin token must have at least 24 characters')
-    app = FastAPI(title='PolyC@home pilot coordinator', version='0.3.0')
+    app = FastAPI(title='PolyC@home pilot coordinator', version='0.4.0')
     store = Store(db_path)
     app.state.store = store
 
@@ -222,4 +222,6 @@ def create_app(db_path: str, admin_token: str) -> FastAPI:
             f'polyc_tasks{{state="{key[6:]}"}} {value}\n' for key, value in sorted(m.items()) if key.startswith('tasks_')
         )
 
+    from .browser import mount_browser
+    mount_browser(app, store, admin_token, admin, bearer)
     return app
