@@ -175,12 +175,14 @@ def test_polic_editor_buttons_and_visible_validation(setup):
     js_response = client.get('/web/app.js')
     css_response = client.get('/web/style.css')
     js = js_response.text
-    assert '>Preview My PoliC</button>' in html
-    assert '>Export PoliC JSON</button>' in html
+    assert '>View My PoliC</button>' in html
+    assert '>Download PoliC YAML</button>' in html
+    assert '>Download JSON</button>' in html
     assert '>Enroll in Catnap</button>' in html
     for widget in ('policActionNotice', 'enrollmentNotice', 'policEditorReady'):
         assert f'id="{widget}"' in html
-    assert 'const c=await draftPolic();' in js
+    assert 'const constitution=registered?state.node.constitution:await draftPolic();' in js
+    assert 'asPolicYaml(constitution)' in js
     assert "message('policActionNotice'" in js
     assert "message('enrollmentNotice'" in js
     assert 'This Commons requires a one-use invitation' in js

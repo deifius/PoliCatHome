@@ -85,10 +85,33 @@
           <p class="section-lead">This is your policy for this browser. Review it, enroll, then <strong>start separately</strong>. You can stop any time.</p>
           <div class="journey-steps" aria-label="Catnap steps"><span><b>1</b> Choose</span><span><b>2</b> Review & enroll</span><span><b>3</b> Start or stop</span></div>
           <div class="visitor-status" id="visitorStatus" role="status" aria-live="polite">Not enrolled · CPU work is off</div>
+          <section class="policy-access" aria-label="Your PoliC file">
+            <div><strong>Your PoliC, yours to keep.</strong><p>View or download your YAML at any time. Before enrollment it is a draft; after enrollment it is the exact registered policy (no login token included).</p></div>
+            <div class="policy-access-actions"><button id="previewPolicBtn" class="secondary" type="button" aria-controls="policPreview" aria-expanded="false">View My PoliC</button><button id="exportYamlBtn" class="secondary" type="button">Download PoliC YAML</button><button id="exportPolicBtn" class="secondary" type="button">Download JSON</button></div>
+            <p id="policEditorReady" class="helper" role="status">Loading the PoliC editor…</p>
+            <div id="policActionNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>
+            <pre id="policPreview" class="polic-preview" aria-live="polite" hidden></pre>
+          </section>
           <div id="enrollForm">
             <p class="self-join-note" hidden><strong>Self-enrollment available.</strong> No invitation or administrator token needed. Enrollment alone does not start work.</p>
             <div id="inviteFallback" class="form-row" hidden><label for="inviteCatnap">One-use Catnap invitation (this Commons requires one)</label><input id="inviteCatnap" autocomplete="off" placeholder="Invitation provided by this Commons"></div>
             <p id="enrollmentModeNotice" class="helper" role="status">Checking enrollment options…</p>
+            <section class="resource-discovery" aria-labelledby="resource-title">
+              <div class="resource-head"><div><h3 id="resource-title">Explore what your browser can offer</h3><p>Optional, local inspection before consent. It does not enroll you, start Catnap, or send these readings to the Commons.</p></div><button id="inspectResourcesBtn" class="secondary" type="button">Inspect my browser</button></div>
+              <div id="resourceStatus" class="helper" role="status" aria-live="polite">No inspection has run yet. You may still set your PoliC.</div>
+              <div id="resourceResults" hidden>
+                <dl class="resource-grid">
+                  <div><dt>Logical CPU processors <details class="help-tip"><summary aria-label="About logical CPU processors">?</summary><div class="tip-content">Browser-reported logical concurrency, possibly reduced for privacy or scheduling. Not physical CPU cores.</div></details></dt><dd id="resourceCpu">—</dd></div>
+                  <div><dt>Approximate system RAM <details class="help-tip"><summary aria-label="About browser RAM reading">?</summary><div class="tip-content">Only a rounded memory tier, when available; not free RAM and not a memory limit.</div></details></dt><dd id="resourceRam">—</dd></div>
+                  <div><dt>WebGL 2 graphics <details class="help-tip"><summary aria-label="About WebGL">?</summary><div class="tip-content">Graphics rendering support is separate from permission to compute. The optional screensaver can use GPU graphics resources.</div></details></dt><dd id="resourceGl">—</dd></div>
+                  <div><dt>WebGPU compute capability <details class="help-tip"><summary aria-label="About WebGPU limits">?</summary><div class="tip-content">The reported maximum buffer size is a per-allocation API ceiling, NOT the GPU's total or free VRAM. The pilot does not schedule Catnap GPU work.</div></details></dt><dd id="resourceGpu">—</dd></div>
+                  <div><dt>Battery <details class="help-tip"><summary aria-label="About battery readings">?</summary><div class="tip-content">May be restricted or synthesized by your browser. Not used as an automatic stop rule in this pilot.</div></details></dt><dd id="resourceBattery">—</dd></div>
+                  <div><dt>Temperature / fan / GPU watts <details class="help-tip"><summary aria-label="About hardware sensors">?</summary><div class="tip-content">Web pages cannot normally read these sensors or enforce thermal, fan or hardware wattage limits. A separately installed and authorized native monitor would be required.</div></details></dt><dd id="resourceSensors">Not exposed by ordinary browser APIs</dd></div>
+                </dl>
+                <details class="resource-gpu-proof"><summary>Try a tiny GPU calculation (separate opt-in diagnostic)</summary><p>Only if WebGPU is available: press the button to execute a four-number calculation locally, then release the buffers. This does not contribute compute to a Cat or register consent, and is not a GPU stress test.</p><button id="gpuProofBtn" class="secondary" type="button">Run local GPU proof</button><p id="gpuProofNotice" role="status" aria-live="polite" class="helper"></p></details>
+                <p class="resource-caveat">The inspection does not reveal total free VRAM, temperatures, fan speeds or accurate power consumption. These readings stay in this page; the exported PoliC contains your <em>choices</em>, not hardware identifiers or inspection readings.</p>
+              </div>
+            </section>
             <fieldset class="polic-fieldset trust-fieldset"><legend>1. Choose Cats you trust </legend>
               <details class="help-tip"><summary aria-label="More about trusted creators" title="More about trusted creators">?</summary><div class="tip-content">Selecting one Cat trusts its creator key, including future operator-approved Cats signed by that creator. You can revoke and re-enroll to change this. No creator is selected automatically.</div></details>
               <p class="field-description">Only Cats approved by this Commons appear here. <strong>None are selected for you.</strong> Without a trusted Cat, you can enroll but receive no tasks.</p>
@@ -123,12 +146,7 @@
                 <p class="helper">The session clock is a local browser control; it does not enforce a hardware limit.</p>
               </fieldset>
             </details>
-            <div class="review-section"><div class="choice-head"><strong>3. Review before enrolling</strong><details class="help-tip"><summary aria-label="More about PoliC preview" title="More about PoliC preview">?</summary><div class="tip-content">Preview displays your policy as JSON and export saves a copy. Neither action registers you or starts any computing.</div></details></div>
-              <div class="polic-preview-controls"><button id="previewPolicBtn" class="secondary" type="button" aria-controls="policPreview" aria-expanded="false">Preview My PoliC</button><button id="exportPolicBtn" class="secondary" type="button">Export PoliC JSON</button></div>
-              <p id="policEditorReady" class="helper" role="status">Loading the PoliC editor…</p>
-              <div id="policActionNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>
-              <pre id="policPreview" class="polic-preview" aria-live="polite" hidden></pre>
-            </div>
+            <p class="helper">3. <strong>Review your PoliC above</strong> before you decide to enroll. You can download YAML or JSON without consenting to compute.</p>
             <div class="consent-final"><label class="polic-check consent-check"><input id="browserConsent" type="checkbox"><span><strong>I understand and consent to enrollment.</strong> CPU work will only begin if I separately press <strong>Start Catnap</strong>. It may consume electricity and produce heat, and the pacing choice is not a hardware safety limit.</span></label>
               <button id="enrollBtn" class="primary wide" type="button">Enroll in Catnap</button>
               <div id="enrollmentNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>

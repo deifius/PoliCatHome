@@ -14,6 +14,7 @@ safe migration procedure are explained in [Repository layout](REPOSITORY-LAYOUT.
 
 - [Visitor landing](VISITOR-LANDING.md): consent-first information architecture and review checklist
 - [Browser Catnap](CATNAP-BROWSER.md): capabilities and restrictions
+- [Browser resources, inspection and PoliC YAML](RESOURCE-CONSENT.md): available readings, actual controls and policy exports
 - [Scene SDK](SCENE-SDK.md): WebGL/screensaver integration
 
 ## Project architecture and safety
@@ -34,3 +35,4 @@ safe migration procedure are explained in [Repository layout](REPOSITORY-LAYOUT.
 - [Documentation license notice](LICENSE-CC-BY-4.0.md)
 - [Overall licensing matrix](../LICENSING.md)
 - [Philosophy](../Philosophy.md)
+

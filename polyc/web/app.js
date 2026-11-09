@@ -1,9 +1,11 @@
 import { scenes, themes, validateTheme, demoSnapshot } from './scenes/registry.js';
 import { canonical, digest, hex, verifySignedCat } from './protocol.js';
+import { asPolicYaml } from './polic-yaml.js';
+import { inspectResources, proveWebGpu } from './resource-inspector.js';
 const $=id=>document.getElementById(id);
 const encoder=new TextEncoder();
 const state={snapshot:demoSnapshot(),node:null,adminToken:null,scene:null,sceneId:'gibson',theme:themes.gibson,
-             sceneSpeed:.5,run:false,worker:null,abortTask:null,localProgress:0,polling:false,lastFrame:0,sessionDeadline:0,sessionMinutes:30,selfEnroll:null,catalog:[]};
+             sceneSpeed:.5,run:false,worker:null,abortTask:null,localProgress:0,polling:false,lastFrame:0,sessionDeadline:0,sessionMinutes:30,selfEnroll:null,catalog:[],constitutionTemplate:null};
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function api(path,method='GET',payload=null,token=null){const options={method,headers:{'Accept':'application/json'}};
   if(token)options.headers.Authorization=`Bearer ${token}`;
@@ -135,7 +137,8 @@ async function loadEnrollmentOptions(){try{
   $('enrollmentModeNotice').textContent=state.selfEnroll?'Self-enrollment is enabled: no invitation or operator account is needed.':'This Commons currently requires an invitation for Catnap registration.';
   document.querySelector('.self-join-note').hidden=!state.selfEnroll;
 }catch(err){state.selfEnroll=null;$('enrollmentModeNotice').textContent=`Enrollment settings unavailable: ${err.message}`;}}
-async function draftPolic(){const template=await api('/api/catnap/constitution-template');const constitution=template.constitution;
+async function draftPolic(){const template=state.constitutionTemplate || (await api('/api/catnap/constitution-template')).constitution;
+  state.constitutionTemplate=template;const constitution=structuredClone(template);
   const nodeId=$('catnapName').value.trim();if(!/^[a-z0-9-]{3,64}$/.test(nodeId))throw Error('Node ID must be 3–64 lowercase letters, digits or hyphens');
   const manualKeys=$('trustedSigners').value.split(/[\s,]+/).filter(Boolean).map(s=>s.toLowerCase());
   const selectedKeys=[...document.querySelectorAll('#approvedCatList input[type="checkbox"]:checked')].map(el=>el.value);
@@ -151,27 +154,51 @@ async function draftPolic(){const template=await api('/api/catnap/constitution-t
   constitution.spec.ethos.exclude_projects_with_declared_purposes=excludedPurposes(constitution.spec.ethos.exclude_projects_with_declared_purposes);
   return constitution;
 }
-async function previewPolic(exportFile=false){
-  const btn=$('previewPolicBtn'),exportBtn=$('exportPolicBtn');
-  btn.disabled=exportBtn.disabled=true;
-  message('policActionNotice',exportFile?'Preparing your PoliC download…':'Building your PoliC preview…');
-  try{
-    // Preview/export are exploratory. They never require an invitation, trusted signer, or consent to compute.
-    const c=await draftPolic();
-    $('policPreview').textContent=JSON.stringify(c,null,2);
-    $('policPreview').hidden=false;
-    btn.setAttribute('aria-expanded','true');
-    const needsKeys=c.spec.trust.trusted_signers.length===0;
-    if(exportFile)download(c.metadata.name+'.polic.json',c);
-    message('policActionNotice',
-      (exportFile?'PoliC JSON downloaded. ':'PoliC preview is displayed below. ')+
-      (needsKeys?'No Cats are trusted yet, so enrollment will be idle until you add one. ':'Selected creators will be trusted for compatible, approved work. ')+
-      'Neither action enrolls you or starts compute.');
-  }catch(err){
-    $('policPreview').hidden=true;
-    btn.setAttribute('aria-expanded','false');
-    message('policActionNotice',`Could not ${exportFile?'export':'preview'} PoliC: ${err.message}`,true);
-  }finally{btn.disabled=exportBtn.disabled=false;}
+async function previewPolic(format=null){
+  const buttons=[$('previewPolicBtn'),$('exportPolicBtn'),$('exportYamlBtn')];
+  buttons.forEach(button=>button.disabled=true);
+  message('policActionNotice', 'Preparing your PoliC…');
+  try {
+    // Registered policies are immutable: export the exact enrolled document, never a freshly edited draft.
+    const registered=!!state.node;
+    const constitution=registered?state.node.constitution:await draftPolic();
+    if(format==='yaml')downloadText(`${constitution.metadata.name}.polic.yaml`,asPolicYaml(constitution),'application/yaml');
+    else if(format==='json')download(`${constitution.metadata.name}.polic.json`,constitution);
+    else {
+      $('policPreview').textContent=asPolicYaml(constitution);
+      $('policPreview').hidden=!$('policPreview').hidden;
+      $('previewPolicBtn').setAttribute('aria-expanded',String(!$('policPreview').hidden));
+    }
+    message('policActionNotice',`${registered?'Registered':'Draft'} PoliC ${format?'downloaded':$('policPreview').hidden?'hidden':'shown'} locally. No device readings or authentication tokens are included. `+
+      'Session duration is a browser-only control and is not part of the registered YAML. '+
+      (!registered?'Neither preview nor download enrolls you or starts compute.':'To change the registered policy, revoke and re-enroll.'));
+  } catch(err) {
+    message('policActionNotice',`Could not prepare PoliC: ${err.message}`,true);
+  } finally {buttons.forEach(button=>button.disabled=false);}
+}
+async function inspectMyBrowser(){
+  const btn=$('inspectResourcesBtn');btn.disabled=true;
+  $('resourceStatus').textContent='Inspecting local browser capabilities…';
+  try {
+    const r=await inspectResources();
+    $('resourceCpu').textContent=r.logicalProcessors===null?'Not reported':`${r.logicalProcessors} logical processors reported`;
+    $('resourceRam').textContent=r.approximateRamGiB===null?'Not exposed':`≈ ${r.approximateRamGiB} GiB (rounded tier)`;
+    $('resourceGl').textContent=r.webgl.available?`Supported · max texture dimension ${r.webgl.maxTextureSize}`:'Unavailable / blocked';
+    $('resourceGpu').textContent=r.webgpu.available?`WebGPU available · max individual buffer ${r.webgpu.maxBufferMiB} MiB · max storage binding ${r.webgpu.maxStorageBindingMiB} MiB${r.webgpu.vendor?' · '+r.webgpu.vendor:''}`:'Unavailable / blocked';
+    $('resourceBattery').textContent=r.battery?`${r.battery.percentage}% · ${r.battery.charging?'charging':'on battery'}`:'Not exposed by this browser';
+    $('resourceSensors').textContent='Temperature, fan RPM, GPU watts & total/free VRAM: not exposed';
+    $('gpuProofBtn').disabled=!r.webgpu.available;
+    $('resourceResults').hidden=false;
+    $('resourceStatus').textContent='Local inspection complete. Inspection alone performs no GPU computation, Catnap work, or enrollment.';
+  } catch(err) {$('resourceStatus').textContent=`Could not inspect resources: ${err.message}`;}
+  finally {btn.disabled=false;}
+}
+async function gpuProof(){
+  const btn=$('gpuProofBtn');btn.disabled=true;
+  $('gpuProofNotice').textContent='Running tiny local proof; nothing is submitted…';
+  try {const result=await proveWebGpu();$('gpuProofNotice').textContent=`GPU compute worked locally: ${result.join(', ')}. Buffers released. This was not Catnap.`;}
+  catch(err){$('gpuProofNotice').textContent=`GPU proof unavailable: ${err.message}`;}
+  finally {btn.disabled=false;}
 }
 function sessionMinutes(){return Number($('sessionMinutes').value);}
 async function enroll(){
@@ -253,9 +280,10 @@ async function signedCat(){const project={project_id:$('catId').value.trim(),tit
   $('creatorPubKey').textContent=pub;
   return {project,signer_pubkey:pub,signature:sig};
 }
-function download(name,payload){const blob=new Blob([JSON.stringify(payload,null,2)+'\n'],{type:'application/json'});
+function downloadText(name,text,type='text/plain'){const blob=new Blob([text],{type});
   const href=URL.createObjectURL(blob);const a=document.createElement('a');a.href=href;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(href),2000);
 }
+function download(name,payload){downloadText(name,JSON.stringify(payload,null,2)+'\n','application/json');}
 async function prepareCat(submit){try{const signed=await signedCat();download(signed.project.project_id+'.signed.json',signed);
   if(submit){const result=await api('/api/workshop/cats','POST',{
     invitation:$('inviteCreate').value.trim(),signed_project:signed});
@@ -313,7 +341,10 @@ function wireUI(){
   $('cpuBudget').oninput=e=>$('cpuValue').textContent=e.target.value+'%';
   $('refreshCatalog').onclick=refreshCatalog;
   $('previewPolicBtn').onclick=()=>previewPolic();
-  $('exportPolicBtn').onclick=()=>previewPolic(true);
+  $('inspectResourcesBtn').onclick=inspectMyBrowser;
+  $('gpuProofBtn').onclick=gpuProof;
+  $('exportYamlBtn').onclick=()=>previewPolic('yaml');
+  $('exportPolicBtn').onclick=()=>previewPolic('json');
   $('exportSkinBtn').onclick=()=>download('catnap-skin.json',state.theme);
   $('importSkin').onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;if(file.size>10000)throw Error('Skin file too large');
     const skin=validateTheme(JSON.parse(await file.text()));themes.custom=skin;const sel=$('skinSelect');let opt=sel.querySelector('option[value=custom]');
@@ -347,7 +378,7 @@ function wireUI(){
 }
 function init(){try{const n=JSON.parse(sessionStorage.getItem('polyc.catnap.node.v1'));if(n?.node_id&&n?.token&&n?.constitution)state.node=n;}catch{sessionStorage.removeItem('polyc.catnap.node.v1');}
   showEnrolled();if(!state.node)$('catnapName').value='browser-cat-'+hex(crypto.getRandomValues(new Uint8Array(3)));const saved=localStorage.getItem('polyc.catnap.skin');if(saved&&themes[saved]){$('skinSelect').value=saved;state.theme=themes[saved];}
-  wireUI();loadEnrollmentOptions();refreshCatalog();$('policEditorReady').textContent='PoliC editor ready. You can preview a draft before enrolling.';presentSnapshot(demoSnapshot());requestAnimationFrame(draw);
+  wireUI();api('/api/catnap/constitution-template').then(r=>{state.constitutionTemplate=r.constitution;}).catch(()=>{});loadEnrollmentOptions();refreshCatalog();$('policEditorReady').textContent='PoliC editor ready. You can preview a draft before enrolling.';presentSnapshot(demoSnapshot());requestAnimationFrame(draw);
   if(state.node)refreshLive();setInterval(refreshLive,2500);
 }
 init();

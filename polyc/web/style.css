@@ -166,3 +166,21 @@ html{scroll-behavior:smooth;scroll-padding-top:22px}
   .visitor-hero{padding-bottom:15px}
   .preflight{margin:14px 0 17px}
 }
+/* Locally inspected resource capabilities and always-available PoliC exports. */
+.policy-access,.resource-discovery{margin:15px 0;border:1px solid #385a72;background:#102439;border-radius:9px;padding:17px}
+.policy-access>div:first-child strong{font-size:14px;color:#e7f6ff}
+.policy-access>div:first-child p,.resource-head p{margin:5px 0 8px;font-size:12px;line-height:1.65;color:#bed4e3}
+.policy-access-actions{display:flex;flex-wrap:wrap;gap:8px;margin:11px 0}
+.policy-access-actions button,.resource-head button{font-size:12px;min-height:40px;text-transform:none}
+.policy-access .polic-preview{max-height:340px;overflow:auto;white-space:pre;tab-size:2}
+.resource-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.resource-head h3{margin:0;font-size:16px;color:#e5f6ff}
+.resource-head button{flex-shrink:0}
+.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.resource-grid>div{padding:12px;background:#0d1b2e;border:1px solid #2b4d64;border-radius:6px;min-width:0}
+.resource-grid dt{font-size:11px;color:#a7c8d9;margin-bottom:7px}
+.resource-grid dd{font-size:13px;font-weight:650;line-height:1.5;color:#ecf8fb;margin:0;overflow-wrap:anywhere}
+.resource-gpu-proof{border:1px solid #42677a;border-radius:6px;padding:11px;margin:12px 0;color:#d8e9f2;font-size:12px}
+.resource-gpu-proof summary{cursor:pointer;font-weight:700}
+.resource-gpu-proof p,.resource-caveat{font-size:12px;line-height:1.65;color:#bdd3e0}
+@media(max-width:600px){.resource-grid{grid-template-columns:1fr}.resource-head{align-items:stretch;flex-direction:column}.policy-access-actions button{flex:1 1 auto}}

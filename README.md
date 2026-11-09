@@ -39,7 +39,7 @@ The starter [`constitution.example.yaml`](constitution.example.yaml) illustrates
 Open a participating PoliC@home Commons, select **Catnap**, and follow this sequence:
 
 1. **Choose Cats.** Review the catalog of operator-approved Cats and deliberately select the creators you trust. Choosing none is allowed; you will remain idle.
-2. **Make your PoliC.** Select eligible categories, excluded purposes, commercial-use consent, best-effort CPU pacing, task timeout, and session duration. Use **Preview My PoliC** or **Export PoliC JSON** to inspect it before joining.
+2. **Make your PoliC.** Select eligible categories, excluded purposes, commercial-use consent, best-effort CPU pacing, task timeout, and session duration. Use **View My PoliC**, **Download PoliC YAML**, or **Download JSON** before joining, and again after enrollment to retrieve the exact registered policy. A separate **Inspect my browser** action locally reports browser-visible capabilities; a tiny GPU proof is optional and never Catnap work.
 3. **Understand the limits.** This browser runs only the built-in, bounded **SHA-256 CPU pilot**. It may use electricity and create heat. It cannot run arbitrary Docker images, use native GPUs, continue after the tab closes, or enforce a hardware temperature limit.
 4. **Enroll in Catnap.** Acknowledge the resource disclosure and enroll. Enrollment alone does **not** start work. Where self-enrollment is enabled, no invitation or operator account is needed.
 5. **Start Catnap.** Press **Start Catnap** to contribute CPU on this device. Inspect task receipts and the Chronicle, **Pause** to stop, and **Revoke Consent** to end authorization.
@@ -119,10 +119,11 @@ This erases **your local Commons database and administrator credential**, not th
 
 The current pilot has a coordinator, an approved signed **SHA-256** task protocol, independently configured workers, consent checks, task receipts/Chronicle, browser Catnap, a local Docker Catbox, and a WebGL visualization (default **Gibson** scene). A five-worker demonstration runs on one Linux host; **five independent households have not yet been validated**. Create a Cat stages signed proposals for operator approval; its submission path is not unrestricted container execution.
 
-**Not yet available:** arbitrary Cat/OCI execution, native GPU or WebGPU computation, guaranteed host thermal/power enforcement, unattended public Internet deployment, automatic verification of creators' stated project purposes, and real-money payments. A separate **noncash test-credit** prototype exists; its credits are not money or guaranteed compute. See the [roadmap](docs/ROADMAP.md) for planned work.
+**Not yet available:** arbitrary Cat/OCI execution, native GPU or WebGPU **Catnap workloads** (the separate local WebGPU diagnostic is not donated compute), guaranteed host thermal/power enforcement, unattended public Internet deployment, automatic verification of creators' stated project purposes, and real-money payments. A separate **noncash test-credit** prototype exists; its credits are not money or guaranteed compute. See the [roadmap](docs/ROADMAP.md) for planned work.
 
 ## Further reading and development
 
+- **[Browser resources and PoliC YAML](docs/RESOURCE-CONSENT.md)** — what the browser can inspect and precisely control, and how to export a draft or enrolled policy.
 - **[Informed consent and full lifecycle](docs/CONSENT-AND-LIFECYCLE.md)** — complete permissions, security limits, pause/revoke/removal, troubleshooting.
 - **[Local acceptance walkthrough](docs/LOCAL-TEST.md)** — how to approve a test Cat and verify that a consenting visitor actually receives work.
 - **[Documentation index](docs/INDEX.md)** — browser protocol, project submissions, threat model, economics, architecture, scenes, and developer references.
