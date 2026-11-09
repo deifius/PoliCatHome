@@ -1,3 +1,9 @@
+# Getting Started — choose your consent path
+
+**Start here:** [Consent, running and complete removal](CONSENT-AND-LIFECYCLE.md).
+The website also offers `/web/participate.html` with each path explained,
+including constraints and stop/revoke/delete commands.
+
 # Getting started
 
 See the root README's verified `python -m polyc.demo` and manually managed five-owner tutorial. For the **Catnap browser** (including the default **Gibson** screensaver and **Create a Cat** project workshop), follow [CATNAP-BROWSER.md](CATNAP-BROWSER.md).

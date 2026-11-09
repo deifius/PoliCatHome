@@ -22,4 +22,4 @@ include = ["polyc*"]
 testpaths = ["tests"]
 
 [tool.setuptools.package-data]
-polyc = ["web/*.html", "web/*.css", "web/*.js", "web/scenes/*.js"]
+polyc = ["web/*.html", "web/downloads/*.zip", "web/*.css", "web/*.js", "web/scenes/*.js"]

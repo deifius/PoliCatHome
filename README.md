@@ -9,7 +9,48 @@
 
 PolyC@home is an open-source experiment in household-owned cooperative computation, drawing inspiration from SETI@home, Folding@home, GNU Hurd, and the cheerful impossibility of organizing cats. Owners retain the right to run their own work first, choose which projects their spare cycles support, and withdraw at any time. Project authors can also specify which contributors they consent to work with. Each side has a constitution.
 
-**Status: v0.4 — the v0.3 Linux CPU/test-credit pilot plus a runnable browser Catnap, WebGL Gibson, extensible scenes, and an invited Create a Cat workshop.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
+**Status: consent-first onboarding on top of the v0.4 pilot — the v0.3 Linux CPU/test-credit pilot plus a runnable browser Catnap, WebGL Gibson, extensible scenes, and an invited Create a Cat workshop.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
+
+## Start, stop, and remove (consent-first)
+
+**Three distinct workflows:** browser Catnap (no install), native Docker
+Catbox (approved built-in CPU work only), and independent Docker Commons
+coordinator (does not donate work). The website now offers an end-to-end
+setup / consent / shutdown / cleanup guide at `/web/participate.html`.
+See [Consent and lifecycle runbook](docs/CONSENT-AND-LIFECYCLE.md) before
+running any containers. Nothing installed or executed merely by visiting.
+
+```bash
+# Start your own local coordinator (not a worker):
+bash scripts/start-local.sh
+# Create a private Catbox identity with explicit consent; then start it:
+bash scripts/catbox-local.sh enroll
+bash scripts/catbox-local.sh start
+# Stop and remove Catbox after remote revocation:
+bash scripts/catbox-local.sh remove
+# Stop server, preserving data:
+bash scripts/stop-local.sh
+# Or destroy local coordinator DB volume and admin token (requires typed confirmation):
+bash scripts/remove-local.sh --purge-data
+```
+
+Native Catbox has a hard Docker 0.5 CPU / 768 MiB quota but **cannot enforce
+host temperature or electricity limits**, and its network access is not
+firewalled. It runs only the packaged signed SHA-256 pilot task — no arbitrary
+OCI artifacts, GPU workloads or payments. Remote HTTPS Commons are supported
+for native Catbox enrollment only when self-enrollment is enabled.
+
+## Launch locally in Docker (Windows 11 / WSL2)
+
+With Docker Desktop running and WSL integration enabled, extract this source ZIP, `cd` to the repository root, and run:
+
+```bash
+bash scripts/start-local.sh
+```
+
+Open **http://localhost:8765/** in your Windows browser. Read the private operator token using `cat runtime/admin-token.txt`; paste it into **Commons** → **CONNECT OVERVIEW**. The Compose port is bound to localhost only. Use `bash scripts/commons-local.sh logs` to inspect logs and `bash scripts/stop-local.sh` to shut down. See [local browser test walkthrough](docs/LOCAL-TEST.md) for creating an approved Cat, enrolling a volunteer, starting Catnap and testing Pause/Revoke.
+
+The Docker service only coordinates participants; it does not magically supply client CPU/GPU resources. The local browser worker contributes bounded CPU SHA-256 computation only by explicit consent.
 
 ## Catnap and Create a Cat: the browser experience (v0.4)
 
@@ -28,7 +69,7 @@ polyc serve --db runtime/browser.sqlite --host 127.0.0.1 --port 8765
 # Visit http://127.0.0.1:8765/ from a browser on this computer.
 ```
 
-The initial public preview does not require credentials. To create actual Cats or register new Catnap volunteers, use the **Commons** operator panel to issue separate one-use invitations, not a shared administrator token. It is intended for **localhost or an HTTPS/VPN deployment with security review**, not for exposing this development server to the Internet.
+The initial public preview does not require credentials. On a coordinator explicitly configured with `POLYC_SELF_ENROLL=1` (as in the loopback-only Compose demo), volunteers can register without invitations while explicitly selecting trusted approved Cat creators. **Create a Cat** proposals still require one-use operator invitations and review. The development server is intended for localhost and must not be exposed directly to the Internet.
 
 ## Meet the household
 
@@ -247,3 +288,19 @@ James Thurber's dry domestic absurdity is an influence, just as Monty Python sup
 The first line is a joke. The second is a security goal. For the current process pilot, the guest has not yet been given a reliably locked room. That is precisely why we don't invite strangers' code inside.
 
 The cats are free to disagree. The logs are expected to be accurate.
+
+### Replicate from the web UI
+
+The landing page links to a downloadable, versioned-at-build source snapshot ZIP and an in-browser self-hosting guide. Regenerate the published snapshot with `python scripts/build-source-snapshot.py` after editing the repository; never put secrets or runtime data in the source tree. This is a source archive, **not** Git history. The landing page also prominently distinguishes the supported browser CPU SHA-256 work from unavailable native GPU/Catbox and hardware safeguards.
+
+
+### Personal PoliC editor (local UI testing)
+
+**Preview My PoliC** and **Export PoliC JSON** are safe draft-only actions. Neither requires an invitation or trusted creator key, and neither contributes compute. A draft with an empty trust list **is** enrollable but cannot receive work. **Enroll in Catnap** requires explicit resource-safety acknowledgement, but no invitation on this local pilot. Visitors select trusted creator keys from the approved Cat list rather than manually copying hexadecimal keys. Action errors and confirmations appear next to their buttons; **Start Catnap** remains a separate choice after enrollment. During local testing JavaScript and CSS are served without browser caching to avoid stale deployments.
+
+
+### Invitation-free guest Catnap (local pilot)
+
+The `compose.yaml` example explicitly enables `POLYC_SELF_ENROLL=1` on the loopback-only local testing service. Visiting `/` now shows **approved browser-compatible Cats** with explicit, initially unchecked creator-trust choices. A guest can preview/export their PoliC, acknowledge real heat/electricity and unenforced limits, and enroll **without** an operator-issued invite or copying raw creator keys. **Enrollment is not execution:** they must press **Start Catnap** separately. They may also enroll trusting no creators; that node stays idle and cannot receive jobs. On revoke, they may re-enroll with a new browser ID. The operator still exclusively approves executable Cats, and Create a Cat still requires a one-use project invitation.
+
+For self-hosting outside the supplied local Compose file, the default is `POLYC_SELF_ENROLL=0`, preserving invitation-only registration unless the coordinator owner explicitly opts in. The local pilot adds persistent per-connection limits; **do not expose the test container directly to the Internet**. See `docs/CATNAP-BROWSER.md`, `docs/LOCAL-TEST.md`, and `docs/threat-model.md`.

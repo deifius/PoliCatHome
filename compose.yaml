@@ -1,0 +1,16 @@
+# Test deployment: publish to HOST LOOPBACK ONLY. Not suitable for public exposure.
+services:
+  commons:
+    build: .
+    environment:
+      POLYC_ADMIN_TOKEN: ${POLYC_ADMIN_TOKEN:?Run bash scripts/start-local.sh to generate a local operator token}
+      POLYC_SELF_ENROLL: '1' # Local demo only; review ingress hardening before public hosting
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - commons_runtime:/opt/polic/runtime
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  commons_runtime:

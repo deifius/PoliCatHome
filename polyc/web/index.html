@@ -11,22 +11,40 @@
 <body>
 <div class="app-shell">
   <header class="masthead">
-    <a href="/" class="brand" aria-label="PoliC at Home home"><span class="mark">◈</span><span>POLI<span class="accent">C</span><small>@HOME</small></span></a>
-    <div class="mast-middle"><span class="spark"></span> COMPUTATIONAL COMMONS <span class="mast-version">/ CATNAP v0.4</span></div>
+    <a href="/" class="brand" aria-label="PoliC at Home home"><span class="mark">◈</span><span>Poli<span class="accent">C</span><small>@home</small></span></a>
+    <div class="mast-middle"><span class="spark"></span> COMPUTATIONAL COMMONS <span class="mast-version">/ CATNAP v0.6</span></div>
     <div id="connectBadge" class="tag warn">DEMO • NO LIVE DATA</div>
   </header>
   <nav class="main-nav" aria-label="Primary">
     <button class="nav-btn selected" data-panel="catnapPanel">◉ &nbsp; Catnap <span>Contribute computing</span></button>
     <button class="nav-btn" data-panel="createPanel">✧ &nbsp; Create a Cat <span>Submit a project</span></button>
     <button class="nav-btn" data-panel="commonsPanel">▧ &nbsp; Commons <span>Operator tools</span></button>
+    <a class="nav-link" href="/web/participate.html">◈ &nbsp; Get started <span>Consent · Docker · Cleanup</span></a>
+    <a class="nav-link" href="#get-source">↧ &nbsp; Get the source <span>Run your own Commons</span></a>
   </nav>
   <main>
     <section id="catnapPanel" class="panel visible" aria-label="Catnap">
       <div class="intro-grid">
         <div><div class="eyebrow">CATNAP / THE GIBSON</div><h1>Your cycles. Your constitution. <em>Our Commons.</em></h1>
-          <p class="intro">The blue monoliths represent Catboxes performing real work. Fly through the activity, or switch to another scene. Preview mode is synthetic and clearly marked.</p></div>
+          <p class="intro">The Gibson visualizes computation, but watching it does not run a Catbox or donate your CPU. Choose a participation mode below; preview mode is synthetic and clearly marked.</p></div>
         <div class="hero-readout"><span class="corner-label">VERIFIED TASKS</span><strong id="verifiedCount">0</strong><small id="nodeCount">0 participating nodes</small></div>
       </div>
+      <div class="eyebrow path-kicker">CHOOSE HOW TO PARTICIPATE · NOTHING STARTS AUTOMATICALLY</div>
+      <div class="path-grid" aria-label="Choose a participation path">
+        <a class="path-card" href="#contribute"><span class="path-num">01 · NO INSTALL</span><strong>Catnap in this Browser</strong><small>Configure your PoliC, then explicitly enroll and start local CPU work.</small></a>
+        <a class="path-card" href="/web/participate.html#catbox"><span class="path-num">02 · LOCAL DOCKER</span><strong>Run My Catbox</strong><small>Install an opt-in, resource-capped native worker on your own machine. Stop and remove at will.</small></a>
+        <a class="path-card" href="/web/participate.html#commons"><span class="path-num">03 · SELF HOST</span><strong>Run My Own Commons</strong><small>Host a separate coordinator in Docker; hosting does not donate compute.</small></a>
+      </div>
+      <section class="capability-panel" aria-labelledby="capability-title">
+        <div class="surface-title" id="capability-title">WHAT YOUR BROWSER CAN CONTRIBUTE <span>THIS DEVICE, NOT THE HOSTING SERVER</span></div>
+        <p class="capability-lead">Catnap runs on <strong>your own device</strong> in a browser Web Worker, only after you enroll and press <strong>Start Catnap</strong>. Just visiting this page or watching the Gibson scene does not donate compute.</p>
+        <div class="capability-grid">
+          <div class="capability-item available"><strong>✓ AVAILABLE IN BROWSER</strong><p>Best-effort local CPU time for the built-in <code>SHA-256 chain</code> task; choose a 5–75% pacing target, choose trusted approved Cats, pause or revoke consent.</p></div>
+          <div class="capability-item unavailable"><strong>✕ NOT AVAILABLE IN BROWSER</strong><p>No general-purpose Catbox/Docker workloads, native/GPU acceleration, background compute after closing the tab, or guaranteed CPU, temperature, energy, and OS nice limits.</p></div>
+          <div class="capability-item requirements"><strong>◎ TO ACTUALLY CONTRIBUTE</strong><p>You need a secure HTTPS/localhost connection, your own PoliC and explicit consent. To receive work, opt in to at least one approved Cat creator. Keep the tab open and visible.</p></div>
+        </div>
+        <p class="helper">Your browser's CPU may consume power or generate heat during work. The slider is cooperative pacing, <strong>not</strong> a hard resource cap. No payment is promised. Want enforceable resource controls or native GPUs? You will need a separately installed native agent.</p>
+      </section>
       <div class="scene-nav" role="toolbar" aria-label="Screensaver scene">
         <button class="chip active" data-scene="gibson">GIBSON</button>
         <button class="chip" data-scene="flying">FLYING CATS</button>
@@ -39,7 +57,7 @@
       <div class="screen-shell" id="screenShell">
         <canvas id="sceneCanvas" aria-label="Live compute screensaver visualization" tabindex="0"></canvas>
         <div class="screen-grain" aria-hidden="true"></div>
-        <div class="screen-overlay top-left"><span class="tiny">POLIC // CATNAP</span><strong id="sceneTitle">GIBSON / MONOLITH ARRAY</strong></div>
+        <div class="screen-overlay top-left"><span class="tiny">PoliC // Catnap</span><strong id="sceneTitle">GIBSON / MONOLITH ARRAY</strong></div>
         <div class="screen-overlay top-right"><span class="tiny" id="sceneFeed">SYNTHETIC PREVIEW</span><strong id="sceneClock">00:00:00</strong></div>
         <div class="screen-overlay bottom-left"><span class="tiny">TASKS IN FLIGHT</span><strong id="leasedCount">0</strong></div>
         <div class="screen-overlay bottom-right"><span class="tiny" id="selectedLabel">SELECT A MONOLITH TO INSPECT</span><strong id="selectedDetail">CATBOX CITY // OBSERVER MODE</strong></div>
@@ -54,19 +72,51 @@
           <div class="helper">Skins are validated, declarative JSON. Full screensaver paradigms use the documented scene plug-in API.</div>
         </div>
         <div class="surface">
-          <div class="surface-title">CONTRIBUTE COMPUTING <span>CONSENT BEFORE EXECUTION</span></div>
+          <div class="surface-title" id="contribute">CONTRIBUTE COMPUTING <span>CONSENT BEFORE EXECUTION</span></div>
           <div id="enrollForm">
-            <div class="form-row"><label for="inviteCatnap">One-use Catnap invitation</label><input id="inviteCatnap" autocomplete="off" placeholder="Invitation from the Commons operator"></div>
-            <div class="form-row"><label for="catnapName">Your volunteer node ID</label><input id="catnapName" value="browser-cat-01" maxlength="64" pattern="[a-z0-9-]+"></div>
-            <div class="form-row"><label for="trustedSigners">Trusted Cat creators (64-hex Ed25519 keys; one per line)</label><textarea id="trustedSigners" rows="2" placeholder="Explicitly authorized Cat signers only"></textarea></div>
+            <p class="self-join-note" hidden><strong>No invitation needed on this local Commons.</strong> Choose your PoliC, acknowledge the resource impact, then enroll. Your CPU remains idle until you separately press <strong>Start Catnap</strong>.</p>
+            <div id="inviteFallback" class="form-row" hidden><label for="inviteCatnap">Catnap invitation (only if this Commons requires one)</label><input id="inviteCatnap" autocomplete="off" placeholder="One-use invitation from the Commons operator"></div>
+            <p id="enrollmentModeNotice" class="helper" role="status">Checking the Commons enrollment settings…</p>
+            <div class="form-row"><label for="catnapName">This browser's nickname (automatically generated)</label><input id="catnapName" value="browser-cat-01" maxlength="64" pattern="[a-z0-9-]+"></div>
+            <fieldset class="polic-fieldset"><legend>Choose Cats you trust to work for</legend>
+              <p class="helper">Only operator-approved Cats are listed. Check each creator you want to trust. <strong>Trusting a creator also trusts their future approved Cats</strong>, subject to your other PoliC restrictions. Unchecked creators get no work from you.</p>
+              <div id="approvedCatList" class="approved-cats" aria-live="polite">Loading approved Cats…</div>
+              <button id="refreshCatalog" class="secondary" type="button">Refresh approved Cats</button>
+              <div id="catalogNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>
+              <details class="advanced-trust"><summary>Advanced: manually trust additional creator keys</summary>
+                <div class="form-row"><label for="trustedSigners">Ed25519 public keys (64 hexadecimal characters, one per line)</label><textarea id="trustedSigners" rows="2" placeholder="Optional. Treat these keys as creator-wide trust, not approval of a single Cat."></textarea></div>
+              </details>
+            </fieldset>
             <div class="form-row"><label for="cpuBudget">Best-effort browser CPU budget <output id="cpuValue">25%</output></label><input id="cpuBudget" type="range" min="5" max="75" step="5" value="25"></div>
-            <button id="enrollBtn" class="primary wide">ENROLL IN CATNAP</button>
+            <fieldset class="polic-fieldset"><legend>Your PoliC / Cat eligibility</legend>
+              <p class="helper">Only checked categories may run. A category is a creator-declared label, not a third-party content audit.</p>
+              <label class="polic-check"><input id="categoryScience" type="checkbox" checked> Open science</label>
+              <label class="polic-check"><input id="categoryClimate" type="checkbox" checked> Climate research</label>
+              <label class="polic-check"><input id="categoryMedia" type="checkbox"> Open media</label>
+              <label class="polic-check"><input id="allowCommercial" type="checkbox"> Permit commercial Cats (off by default)</label>
+              <div class="form-row"><label for="excludedPurposes">Additional excluded declared purposes (comma or newline separated)</label><textarea id="excludedPurposes" rows="2" placeholder="e.g. targeted_advertising, surveillance"></textarea></div>
+              <p class="helper">Baseline exclusions (ethnic_cleansing, racial_supremacy) and public-source / pinned-commit / signed-Cat requirements remain enabled.</p>
+            </fieldset>
+            <fieldset class="polic-fieldset"><legend>Your PoliC / work session</legend>
+              <div class="form-row"><label for="taskSeconds">Maximum runtime per task (local timeout, seconds)</label><select id="taskSeconds"><option value="5">5 seconds</option><option value="10">10 seconds</option><option value="15" selected>15 seconds</option><option value="20">20 seconds</option></select></div>
+              <div class="form-row"><label for="sessionMinutes">Stop requesting work after</label><select id="sessionMinutes"><option value="15">15 minutes</option><option value="30" selected>30 minutes</option><option value="60">60 minutes</option><option value="0">Until I press Pause or leave</option></select></div>
+              <p class="helper">Session limit is enforced locally while this page runs; it does not change your registered server constitution. CPU pacing is approximate. There is no guaranteed temperature, energy, memory, or OS-level CPU cap.</p>
+            </fieldset>
+            <div class="polic-preview-controls"><button id="previewPolicBtn" class="secondary" type="button" aria-controls="policPreview">Preview My PoliC</button><button id="exportPolicBtn" class="secondary" type="button">Export PoliC JSON</button></div>
+            <p id="policEditorReady" class="helper" role="status">Editor loading. If this message persists, check that JavaScript is enabled and the browser console has no errors.</p>
+            <p class="helper">Preview and export never enroll or run computing. You may enroll without trusting any Cats, but you will remain idle until you opt in to a creator. This local pilot permits self-enrollment.</p>
+            <div id="policActionNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>
+            <pre id="policPreview" class="polic-preview" aria-live="polite" hidden></pre>
+            <label class="polic-check consent-check"><input id="browserConsent" type="checkbox"> I understand that this runs CPU work on my device only after I press Start; pacing is best-effort, may use electricity and produce heat, and is not a hardware safety limit.</label>
+            <button id="enrollBtn" class="primary wide" type="button">Enroll in Catnap</button>
+            <div id="enrollmentNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>
             <p class="helper">The browser cannot guarantee CPU percentages or enforce thermal, power, GPU, or OS nice limits. Only approved built-in SHA-256 tasks run in this pilot.</p>
           </div>
           <div id="participationForm" hidden>
             <div class="status-line"><span class="spark"></span><strong id="nodeIdentity"></strong><span id="workStatus">PAUSED</span></div>
+            <p id="activePolicSummary" class="polic-summary"></p>
             <div class="meter"><div id="workProgress"></div></div>
-            <div class="inline-actions"><button id="startBtn" class="primary">START CATNAP</button><button id="pauseBtn" class="secondary">PAUSE</button><button id="revokeBtn" class="danger">REVOKE CONSENT</button></div>
+            <div class="inline-actions"><button id="startBtn" class="primary">Start Catnap</button><button id="pauseBtn" class="secondary">Pause</button><button id="revokeBtn" class="danger">Revoke Consent</button></div>
             <p class="helper">Pausing immediately stops local work. Revoking withdraws node consent at the coordinator. A closed or hidden tab does not reliably continue computing.</p>
           </div>
           <div id="catnapNotice" role="status" class="notice"></div>
@@ -119,7 +169,7 @@
           <div class="surface-title">OPERATOR AUTHORIZATION <span>MEMORY ONLY</span></div>
           <div class="form-row"><label for="adminToken">Administrator bearer token</label><input id="adminToken" type="password" autocomplete="off" placeholder="POLYC_ADMIN_TOKEN"></div>
           <div class="inline-actions"><button id="adminConnect" class="primary">CONNECT OVERVIEW</button><button id="adminDisconnect" class="secondary">DISCONNECT</button></div>
-          <div class="form-row"><label for="inviteKind">Invitation type</label><select id="inviteKind"><option value="catnap">Catnap contributor</option><option value="create_cat">Create a Cat</option></select></div>
+          <div class="form-row"><label for="inviteKind">Invitation type</label><select id="inviteKind"><option value="catnap">Catnap contributor (legacy invite)</option><option value="create_cat">Create a Cat</option></select></div>
           <div class="form-row"><label for="inviteQuantity">Number of one-use invitations</label><input id="inviteQuantity" type="number" min="1" max="20" value="1"></div>
           <button id="makeInvites" class="secondary">GENERATE INVITATIONS</button>
           <pre id="inviteOutput" class="key-block">No invitations generated.</pre>
@@ -132,8 +182,23 @@
         </div>
       </div>
     </section>
+    <section id="get-source" class="surface source-panel" aria-labelledby="source-title">
+      <div class="eyebrow">COPY THE COMMONS / OPEN SOURCE</div>
+      <h2 id="source-title">Take PoliC@home home.</h2>
+      <p>Download a source snapshot, inspect or modify it, and run your <strong>own independent PoliC@home coordinator</strong>. Downloading does not enroll your machine in Catnap or grant this server access to your resources.</p>
+      <div class="source-actions"><a class="source-download" href="/web/downloads/PoliCatHome-source.zip" download="PoliCatHome-source.zip">↓ DOWNLOAD SOURCE ZIP</a><a class="source-guide" href="/web/participate.html">SET UP / STOP / REMOVE</a></div>
+      <p class="helper"><a href="/web/participate.html#remove">How to pause, revoke and remove everything you run</a>. Browser Catnap needs no Docker installation. A Docker Catbox needs an explicit local shell command; this web page cannot remotely start it.</p>
+      <p class="helper">The ZIP is a source snapshot, not a Git clone with commit history. Run commands locally; do not paste operator tokens into this web page. Hosting a Commons and contributing compute are separate opt-in actions.</p>
+      <div class="source-steps"><strong>Quick local start (Python 3.10+)</strong><pre>unzip PoliCatHome-source.zip
+cd PoliCatHome-source
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+export POLYC_ADMIN_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(36))')"
+polyc serve --db runtime/browser.sqlite --host 127.0.0.1 --port 8765</pre><p>Then open <code>http://127.0.0.1:8765/</code>. For public hosting, read the security guidance first: the development server should not be exposed directly to the Internet.</p></div>
+    </section>
   </main>
-  <footer>POLIC@HOME / NO POLYC WITHOUT POLIC <span>•</span> CULPABILITY WITH CLARITY <span class="footer-right">LOCAL-FIRST / OPT-IN / OPEN SOURCE</span></footer>
+  <footer>PoliC@home / No PolyC without PoliC <span>•</span> CULPABILITY WITH CLARITY <span class="footer-right">LOCAL-FIRST / OPT-IN / OPEN SOURCE</span></footer>
 </div>
 </body>
 </html>

@@ -3,7 +3,7 @@ import { canonical, digest, hex, verifySignedCat } from './protocol.js';
 const $=id=>document.getElementById(id);
 const encoder=new TextEncoder();
 const state={snapshot:demoSnapshot(),node:null,adminToken:null,scene:null,sceneId:'gibson',theme:themes.gibson,
-             sceneSpeed:.5,run:false,worker:null,abortTask:null,localProgress:0,polling:false,lastFrame:0};
+             sceneSpeed:.5,run:false,worker:null,abortTask:null,localProgress:0,polling:false,lastFrame:0,sessionDeadline:0,sessionMinutes:30,selfEnroll:null,catalog:[]};
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function api(path,method='GET',payload=null,token=null){const options={method,headers:{'Accept':'application/json'}};
   if(token)options.headers.Authorization=`Bearer ${token}`;
@@ -75,12 +75,14 @@ function executeTask(lease){return new Promise((resolve,reject)=>{
 });}
 async function computeLoop(){const id=state.node.node_id,token=state.node.token;
   while(state.run && state.node?.node_id===id){
+    if(state.sessionDeadline && Date.now()>=state.sessionDeadline){stopCompute();message('catnapNotice','Your local session time limit has been reached. Catnap paused.');break;}
     if(document.hidden){$('workStatus').textContent='WAITING FOR VISIBLE TAB';await sleep(900);continue;}
     let lease;
     try{
       $('workStatus').textContent='REQUESTING CONSENTED WORK';
       const res=await api('/api/lease','POST',{node_id:id,constitution_digest:await digest(state.node.constitution)},token);
       if(!state.run)break;
+      if(state.sessionDeadline && Date.now()>=state.sessionDeadline){stopCompute();break;}
       lease=res.assignment;
       if(!lease){$('workStatus').textContent='IDLE • NO MATCHING CATS';await sleep(1200);continue;}
       $('workStatus').textContent=`WORKING • ${lease.task_id}`;
@@ -100,28 +102,114 @@ async function computeLoop(){const id=state.node.node_id,token=state.node.token;
   }
   $('workStatus').textContent='PAUSED';
 }
-function stopCompute(){state.run=false;state.abortTask?.();state.worker?.terminate();state.worker=null;$('workStatus').textContent='PAUSED';$('workProgress').style.width='0%';}
-async function enroll(){try{if(!globalThis.isSecureContext)throw Error('Catnap requires HTTPS or localhost for browser cryptography');
-  const template=await api('/api/catnap/constitution-template');const nodeId=$('catnapName').value.trim();
-  const signers=$('trustedSigners').value.split(/[\s,]+/).filter(Boolean);
-  if(signers.length===0)throw Error('Explicitly supply trusted Cat creator public keys');
-  const constitution=template.constitution;constitution.metadata.name=nodeId;
+function stopCompute(){state.run=false;state.sessionDeadline=0;state.abortTask?.();state.worker?.terminate();state.worker=null;$('workStatus').textContent='PAUSED';$('workProgress').style.width='0%';}
+const declaredPurpose=/^[A-Za-z0-9_-]{1,80}$/;
+function selectedCategories(){const choices=[['categoryScience','open_science'],['categoryClimate','climate_research'],['categoryMedia','open_media']];
+  return choices.filter(([id])=>$(id).checked).map(([,category])=>category);
+}
+function excludedPurposes(base){const values=$('excludedPurposes').value.split(/[,\n]+/).map(v=>v.trim()).filter(Boolean);
+  if(values.length>30||values.some(v=>!declaredPurpose.test(v)))throw Error('Excluded purposes: up to 30 names, each 1–80 letters, digits, _ or -');
+  return [...new Set([...base,...values])];
+}
+function fillApprovedCats(cats){
+  const container=$('approvedCatList');const trusted=new Set([...container.querySelectorAll('input[type="checkbox"]:checked')].map(el=>el.value));
+  container.replaceChildren();
+  if(!cats.length){const p=document.createElement('p');p.className='helper';p.textContent='No approved Cats are currently available. You can enroll now, but no tasks will run until you select a trusted creator. An operator must approve a Cat first.';container.append(p);return;}
+  for(const cat of cats){
+    const label=document.createElement('label');label.className='approved-cat';
+    const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=cat.creator_key;
+    checkbox.checked=trusted.has(cat.creator_key);
+    const content=document.createElement('span');const title=document.createElement('strong');title.textContent=cat.title;
+    const detail=document.createElement('small');detail.textContent=`${cat.category.replaceAll('_',' ')} • ${cat.commercial?'commercial':'noncommercial'} • ${cat.work_kind} • ${cat.financial?'financial contract (not supported in browser)':'volunteer'}`;
+    const key=document.createElement('code');key.textContent=`Creator key: ${cat.creator_key.slice(0,16)}… • ${cat.project_id}`;
+    content.append(title,detail,key);label.append(checkbox,content);container.append(label);
+  }
+}
+async function refreshCatalog(){try{
+  const result=await api('/api/catnap/catalog');state.catalog=result.cats;
+  fillApprovedCats(result.cats);message('catalogNotice',result.cats.length?`${result.cats.length} approved Cat(s) found. Choose creators explicitly; none are selected by default.`:'No approved Cats yet. Enrolling is allowed, but no work will be assigned until you later trust a creator.');
+}catch(err){message('catalogNotice',`Could not load approved Cats: ${err.message}`,true);}}
+async function loadEnrollmentOptions(){try{
+  const settings=await api('/api/catnap/enrollment-options');state.selfEnroll=!!settings.self_enroll;
+  $('inviteFallback').hidden=state.selfEnroll;
+  $('enrollmentModeNotice').textContent=state.selfEnroll?'Self-enrollment is enabled: no invitation or operator account is needed.':'This Commons currently requires an invitation for Catnap registration.';
+  document.querySelector('.self-join-note').hidden=!state.selfEnroll;
+}catch(err){state.selfEnroll=null;$('enrollmentModeNotice').textContent=`Enrollment settings unavailable: ${err.message}`;}}
+async function draftPolic(){const template=await api('/api/catnap/constitution-template');const constitution=template.constitution;
+  const nodeId=$('catnapName').value.trim();if(!/^[a-z0-9-]{3,64}$/.test(nodeId))throw Error('Node ID must be 3–64 lowercase letters, digits or hyphens');
+  const manualKeys=$('trustedSigners').value.split(/[\s,]+/).filter(Boolean).map(s=>s.toLowerCase());
+  const selectedKeys=[...document.querySelectorAll('#approvedCatList input[type="checkbox"]:checked')].map(el=>el.value);
+  const signers=[...new Set([...manualKeys,...selectedKeys])];
+  if(signers.length>20||signers.some(s=>!/^[a-f0-9]{64}$/.test(s)))throw Error('Select at most 20 trusted creators, each with a 64-character hexadecimal public key');
+  const categories=selectedCategories();if(!categories.length)throw Error('Allow at least one category to participate');
+  constitution.metadata.name=nodeId;
   constitution.spec.trust.trusted_signers=[...new Set(signers)];
   constitution.spec.nice_plus.cpu_percent_max=Number($('cpuBudget').value);
-  const token=hex(crypto.getRandomValues(new Uint8Array(32)));
-  const payload={invitation:$('inviteCatnap').value.trim(),node:{node_id:nodeId,token,constitution}};
-  await api('/api/catnap/enroll','POST',payload);
-  state.node=payload.node;sessionStorage.setItem('polyc.catnap.node.v1',JSON.stringify(state.node));showEnrolled();
-  message('catnapNotice',`Enrolled ${nodeId}. Click Start Catnap to begin volunteering. Only explicitly trusted Cats may run.`);
-  await refreshLive();
-}catch(err){message('catnapNotice',err.message,true);}}
+  constitution.spec.nice_plus.task_runtime_seconds_max=Number($('taskSeconds').value);
+  constitution.spec.content.allow_categories=categories;
+  constitution.spec.ethos.allow_commercial_projects=$('allowCommercial').checked;
+  constitution.spec.ethos.exclude_projects_with_declared_purposes=excludedPurposes(constitution.spec.ethos.exclude_projects_with_declared_purposes);
+  return constitution;
+}
+async function previewPolic(exportFile=false){
+  const btn=$('previewPolicBtn'),exportBtn=$('exportPolicBtn');
+  btn.disabled=exportBtn.disabled=true;
+  message('policActionNotice',exportFile?'Preparing your PoliC download…':'Building your PoliC preview…');
+  try{
+    // Preview/export are exploratory. They never require an invitation, trusted signer, or consent to compute.
+    const c=await draftPolic();
+    $('policPreview').textContent=JSON.stringify(c,null,2);
+    $('policPreview').hidden=false;
+    btn.setAttribute('aria-expanded','true');
+    const needsKeys=c.spec.trust.trusted_signers.length===0;
+    if(exportFile)download(c.metadata.name+'.polic.json',c);
+    message('policActionNotice',
+      (exportFile?'PoliC JSON downloaded. ':'PoliC preview is displayed below. ')+
+      (needsKeys?'No Cats are trusted yet, so enrollment will be idle until you add one. ':'Selected creators will be trusted for compatible, approved work. ')+
+      'Neither action enrolls you or starts compute.');
+  }catch(err){
+    $('policPreview').hidden=true;
+    btn.setAttribute('aria-expanded','false');
+    message('policActionNotice',`Could not ${exportFile?'export':'preview'} PoliC: ${err.message}`,true);
+  }finally{btn.disabled=exportBtn.disabled=false;}
+}
+function sessionMinutes(){return Number($('sessionMinutes').value);}
+async function enroll(){
+  const btn=$('enrollBtn');btn.disabled=true;
+  message('enrollmentNotice','Checking your enrollment information…');
+  try{
+    if(!globalThis.isSecureContext)throw Error('Use HTTPS or http://localhost:8765 for browser cryptography');
+    if(state.selfEnroll===null)throw Error('Enrollment settings have not loaded. Reload the page and try again.');
+    const invitation=$('inviteCatnap').value.trim();
+    if(!state.selfEnroll&&!invitation)throw Error('This Commons requires a one-use invitation from its operator.');
+    const constitution=await draftPolic();
+    if(!$('browserConsent').checked)throw Error('Check the resource and safety acknowledgement before enrolling.');
+    const nodeId=constitution.metadata.name;
+    const token=hex(crypto.getRandomValues(new Uint8Array(32)));
+    const payload={accepted_browser_limitations:true,node:{node_id:nodeId,token,constitution}};
+    if(invitation)payload.invitation=invitation;
+    await api('/api/catnap/enroll','POST',payload);
+    state.node=payload.node;
+    state.sessionMinutes=sessionMinutes();
+    sessionStorage.setItem('polyc.catnap.node.v1',JSON.stringify(state.node));
+    showEnrolled();
+    message('catnapNotice',`Enrolled ${nodeId}. No CPU work has started. ${constitution.spec.trust.trusted_signers.length?'Press Start Catnap when ready.':'No creators are trusted yet; Catnap will be idle until you re-enroll with a selected creator.'} To amend your PoliC, revoke and re-enroll.`);
+    await refreshLive();
+  }catch(err){
+    message('enrollmentNotice',`Not enrolled: ${err.message}`,true);
+    message('catnapNotice',`Not enrolled: ${err.message}`,true);
+  }finally{btn.disabled=false;}
+}
 function showEnrolled(){$('enrollForm').hidden=!!state.node;$('participationForm').hidden=!state.node;
-  if(state.node)$('nodeIdentity').textContent=state.node.node_id;
+  if(state.node){$('nodeIdentity').textContent=state.node.node_id;
+    const c=state.node.constitution.spec;
+    $('activePolicSummary').textContent=`Registered PoliC: ${c.trust.trusted_signers.length} trusted creator(s) · ${c.nice_plus.cpu_percent_max}% best-effort CPU pacing · ${c.nice_plus.task_runtime_seconds_max}s task ceiling · ${c.content.allow_categories.join(', ')} · Commercial ${c.ethos.allow_commercial_projects?'permitted':'excluded'}. ${c.trust.trusted_signers.length?'Nothing computes until you press Start.':'No Cats authorized; this session will stay idle.'} To amend your PoliC, revoke and enroll again.`;
+  }
 }
 async function revoke(){if(!state.node)return;stopCompute();try{
   await api(`/api/nodes/${encodeURIComponent(state.node.node_id)}/revoke`,'POST',{},state.node.token);
-  message('catnapNotice','Consent revoked at the coordinator. A new invitation is required to rejoin.');
-  state.node=null;sessionStorage.removeItem('polyc.catnap.node.v1');showEnrolled();if(!state.adminToken)presentSnapshot(demoSnapshot());
+  message('catnapNotice','Consent revoked at the coordinator. Local computing has stopped. You may re-enroll with a new visitor identity.');
+  state.node=null;sessionStorage.removeItem('polyc.catnap.node.v1');$('catnapName').value='browser-cat-'+hex(crypto.getRandomValues(new Uint8Array(3)));showEnrolled();if(!state.adminToken)presentSnapshot(demoSnapshot());
 }catch(err){message('catnapNotice',`Revocation not confirmed remotely: ${err.message}. Local work is stopped. Revoke through the operator if unreachable.`,true);}}
 async function creatorPair(){if(!globalThis.isSecureContext||!crypto.subtle)throw Error('Create a Cat requires a secure browser context');
   return new Promise((resolve,reject)=>{const request=indexedDB.open('polyc-creators-v1',1);
@@ -194,6 +282,9 @@ function wireUI(){for(const btn of document.querySelectorAll('[data-panel]'))btn
   $('skinSelect').onchange=e=>{const skin=themes[e.target.value];if(skin){state.theme=skin;switchScene(state.sceneId);localStorage.setItem('polyc.catnap.skin',e.target.value);}};
   $('speedRange').oninput=e=>{$('speedValue').textContent=e.target.value+'%';state.sceneSpeed=Number(e.target.value)/100;if(state.scene)state.scene.speed=state.sceneSpeed;};
   $('cpuBudget').oninput=e=>$('cpuValue').textContent=e.target.value+'%';
+  $('refreshCatalog').onclick=refreshCatalog;
+  $('previewPolicBtn').onclick=()=>previewPolic();
+  $('exportPolicBtn').onclick=()=>previewPolic(true);
   $('exportSkinBtn').onclick=()=>download('catnap-skin.json',state.theme);
   $('importSkin').onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;if(file.size>10000)throw Error('Skin file too large');
     const skin=validateTheme(JSON.parse(await file.text()));themes.custom=skin;const sel=$('skinSelect');let opt=sel.querySelector('option[value=custom]');
@@ -201,7 +292,7 @@ function wireUI(){for(const btn of document.querySelectorAll('[data-panel]'))btn
     message('catnapNotice',`Skin imported: ${skin.name}. Only colors and labels were read—no code executed.`);
   }catch(err){message('catnapNotice',err.message,true);}};
   $('enrollBtn').onclick=enroll;
-  $('startBtn').onclick=()=>{if(!state.node||state.run)return;state.run=true;message('catnapNotice','Catnap started. Every assigned Cat is locally verified and consent checked.');computeLoop();};
+  $('startBtn').onclick=()=>{if(!state.node||state.run)return;state.sessionDeadline=state.sessionMinutes?Date.now()+state.sessionMinutes*60000:0;state.run=true;message('catnapNotice','Catnap started. Every assigned Cat is locally verified and consent checked.');computeLoop();};
   $('pauseBtn').onclick=()=>{stopCompute();message('catnapNotice','Catnap paused locally. No new leases will be requested.');};
   $('revokeBtn').onclick=revoke;
   $('catFunding').onchange=e=>$('fundingOptions').hidden=e.target.value!=='test_credits';
@@ -223,7 +314,7 @@ function wireUI(){for(const btn of document.querySelectorAll('[data-panel]'))btn
 }
 function init(){try{const n=JSON.parse(sessionStorage.getItem('polyc.catnap.node.v1'));if(n?.node_id&&n?.token&&n?.constitution)state.node=n;}catch{sessionStorage.removeItem('polyc.catnap.node.v1');}
   showEnrolled();if(!state.node)$('catnapName').value='browser-cat-'+hex(crypto.getRandomValues(new Uint8Array(3)));const saved=localStorage.getItem('polyc.catnap.skin');if(saved&&themes[saved]){$('skinSelect').value=saved;state.theme=themes[saved];}
-  wireUI();switchScene('gibson');presentSnapshot(demoSnapshot());requestAnimationFrame(draw);
+  wireUI();loadEnrollmentOptions();refreshCatalog();$('policEditorReady').textContent='PoliC editor ready. You can preview a draft before enrolling.';switchScene('gibson');presentSnapshot(demoSnapshot());requestAnimationFrame(draw);
   if(state.node)refreshLive();setInterval(refreshLive,2500);
 }
 init();

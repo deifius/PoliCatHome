@@ -1,11 +1,14 @@
 """Opt-in browser Catnap and Create a Cat APIs. Not a general code execution service."""
 from __future__ import annotations
 import secrets
+import hashlib
+import hmac
+import os
 import sqlite3
 from pathlib import Path
 from typing import Literal
 
-from fastapi import Depends, Header, HTTPException, Query
+from fastapi import Depends, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -22,7 +25,13 @@ class InvitationRequest(BaseModel):
 
 
 class EnrollmentRequest(BaseModel):
-    invitation: str = Field(min_length=24, max_length=256)
+    invitation: str | None = Field(default=None, min_length=24, max_length=256)
+    accepted_browser_limitations: bool = False
+    node: NodeRegistration
+
+
+class NativeCatboxEnrollmentRequest(BaseModel):
+    accepted_resource_disclosure: bool = False
     node: NodeRegistration
 
 
@@ -62,8 +71,21 @@ def mount_browser(app, store, admin_token, admin, bearer):
         result['spec']['reporting']['catnap_enabled'] = True
         return {'constitution':result, 'note':'Browser policy is cooperative, not OS-enforced. Add trusted signer keys before joining.'}
 
+    # Explicit opt-in. For loopback local Docker pilot set POLYC_SELF_ENROLL=1;
+    # not a substitute for TLS, ingress limits, bot protection or public deployment review.
+    self_enroll_enabled = os.environ.get('POLYC_SELF_ENROLL', '0').lower() in ('1', 'true', 'yes')
+
+    @app.get('/api/catnap/enrollment-options')
+    def enrollment_options():
+        return {'self_enroll': self_enroll_enabled, 'invite_supported': True,
+                'pilot': True, 'note': 'Joining alone never starts CPU work; trust approved Cats and press Start Catnap.'}
+
+    @app.get('/api/catnap/catalog')
+    def approved_cat_catalog():
+        return JSONResponse({'cats': store.public_cat_catalog(), 'note': 'These are creator-declared attributes of approved built-in tasks, not independent content audits.'}, headers={'Cache-Control':'no-store'})
+
     @app.post('/api/catnap/enroll')
-    def enroll(req: EnrollmentRequest):
+    def enroll(req: EnrollmentRequest, request: Request):
         c = req.node.constitution
         try:
             validate_constitution(c)
@@ -77,21 +99,73 @@ def mount_browser(app, store, admin_token, admin, bearer):
             if spec.get('financial'):
                 raise ConstitutionError('browser test-credit settlement is not yet supported')
             signers = spec.get('trust', {}).get('trusted_signers', [])
-            if not signers or len(signers) > 20 or any(
+            if len(signers) > 20 or any(
                 not isinstance(x,str) or len(x) != 64 or any(c not in '0123456789abcdef' for c in x)
                 for x in signers):
-                raise ConstitutionError('explicit trusted 64-character signer keys are required')
+                raise ConstitutionError('trusted creator keys must be 64-character hexadecimal values (empty means no tasks are authorized)')
             if not 1 <= spec['nice_plus']['task_runtime_seconds_max'] <= 25:
                 raise ConstitutionError('browser runtime ceiling must be <=25 seconds (lease lifetime)')
-            store.enroll_browser(req.invitation,req.node)
+            if req.invitation:
+                store.enroll_browser(req.invitation,req.node)
+            else:
+                if not self_enroll_enabled:
+                    raise HTTPException(403,'self-enrollment is disabled on this Commons; use an operator invitation')
+                if not req.accepted_browser_limitations:
+                    raise HTTPException(422,'explicit acknowledgement of browser CPU, energy, heat and non-enforced limits required')
+                # Request.client.host is the directly connected peer. Do not trust
+                # spoofable X-Forwarded-For headers. Proxies must enforce their own
+                # upstream limits as many visitors otherwise share one peer address.
+                peer = request.client.host if request.client else 'unknown'
+                peer_digest = hmac.new(admin_token.encode(),peer.encode(),hashlib.sha256).hexdigest()
+                store.self_enroll_browser(req.node,peer_digest)
         except (ConstitutionError, KeyError, TypeError) as ex:
             raise HTTPException(422,str(ex)) from ex
         except ValueError as ex:
+            if str(ex).startswith(('self-enrollment limit','the pilot Commons')):
+                raise HTTPException(429,str(ex)) from ex
             raise HTTPException(403,str(ex)) from ex
         except sqlite3.IntegrityError as ex:
             raise HTTPException(409,'node ID already enrolled') from ex
-        return {'node_id':req.node.node_id, 'enrolled':True,
+        return {'node_id':req.node.node_id, 'enrolled':True, 'compute_started':False,
                 'constraints':'Browser best-effort CPU pacing only. No thermal, power, OS niceness or GPU controls.'}
+
+    @app.post('/api/catbox/enroll')
+    def native_catbox_enroll(req: NativeCatboxEnrollmentRequest, request: Request):
+        """Opt-in for the separate, built-in-only Docker Catbox pilot (no admin token)."""
+        if not self_enroll_enabled:
+            raise HTTPException(403, 'self-enrollment is disabled on this Commons')
+        if not req.accepted_resource_disclosure:
+            raise HTTPException(422, 'native Catbox resource disclosure and explicit consent are required')
+        try:
+            validate_constitution(req.node.constitution)
+            spec = req.node.constitution['spec']
+            if (spec.get('thermal', {}).get('cpu_package_c_max') is not None or
+                spec.get('energy', {}).get('require_meter') or
+                spec['nice_plus'].get('gpu_utilization_percent_max') or
+                spec.get('financial')):
+                raise ConstitutionError('the pilot Catbox cannot enforce thermal, GPU, energy metering or financial conditions')
+            if spec['nice_plus']['memory_mib_max'] > 512 or spec['nice_plus']['cpu_percent_max'] > 50:
+                raise ConstitutionError('Catbox pilot policy exceeds its 512 MiB task / 50% CPU ceiling')
+            if not 1 <= spec['nice_plus']['task_runtime_seconds_max'] <= 20:
+                raise ConstitutionError('Catbox task runtime must be 1–20 seconds')
+            signers = spec.get('trust', {}).get('trusted_signers', [])
+            if len(signers) > 20 or any(not isinstance(x, str) or len(x) != 64 or
+                any(ch not in '0123456789abcdef' for ch in x) for x in signers):
+                raise ConstitutionError('trusted keys must be lowercase 64-character hex (empty means idle)')
+            peer = request.client.host if request.client else 'unknown'
+            peer_digest = hmac.new(admin_token.encode(), peer.encode(), hashlib.sha256).hexdigest()
+            store.self_enroll_browser(req.node, peer_digest)
+        except (ConstitutionError, KeyError, TypeError) as ex:
+            raise HTTPException(422, str(ex)) from ex
+        except ValueError as ex:
+            if str(ex).startswith(('self-enrollment limit', 'the pilot Commons')):
+                raise HTTPException(429, str(ex)) from ex
+            raise HTTPException(403, str(ex)) from ex
+        except sqlite3.IntegrityError as ex:
+            raise HTTPException(409, 'node ID already enrolled') from ex
+        return {'node_id': req.node.node_id, 'enrolled': True, 'compute_started': False,
+                'scope': 'native-built-in-only',
+                'constraints': 'Docker cgroup CPU/memory caps; no host temperature sensor, GPU or general OCI workloads'}
 
     @app.post('/api/workshop/cats')
     def create_cat(req: CatProposalRequest):
@@ -153,4 +227,7 @@ def mount_browser(app, store, admin_token, admin, bearer):
                 "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
             response.headers['X-Content-Type-Options'] = 'nosniff'
             response.headers['Referrer-Policy'] = 'no-referrer'
+            # Avoid stale UI assets after rebuilding the local Docker image.
+            if request.url.path.endswith(('.js', '.css')):
+                response.headers['Cache-Control'] = 'no-store'
         return response

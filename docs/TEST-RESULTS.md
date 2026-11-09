@@ -31,3 +31,20 @@ python -m polyc.economy_demo
 ```
 
 No result should be interpreted as proof of decentralized model training or verified ecological benefit. The cats have finished their arithmetic and decline further testimony.
+
+## Consent-first three-path onboarding (November 2026)
+
+Tests added for native Catbox endpoint self-enrollment, the required distinct
+resource disclosure, refusing remote cleartext URLs, cancellation without
+registration, 0600 local contributor token and 0700 owner directory, idle by
+default with no trusted signer, dashboard/guide paths, and conservative Docker
+Compose constraints. The smoke check uses an installed headless Chromium with
+static resources injected (network browsing to local/remote URLs is blocked in
+our execution environment). The command-copy handler and the three navigation
+cards were exercised.
+
+All 51 Python tests and the existing JavaScript crypto/worker tests passed in
+the authoring environment. **Docker was not installed in that environment, so
+full Docker Compose build, container startup, cgroup behavior, and cross-host
+networking are NOT yet verified.** Conduct the acceptance procedure in
+`docs/CONSENT-AND-LIFECYCLE.md` on the owner's machine before real-world use.

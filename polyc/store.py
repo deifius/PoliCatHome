@@ -47,6 +47,9 @@ class Store:
                id TEXT NOT NULL, revision INTEGER NOT NULL, bundle_digest TEXT NOT NULL,
                signed_bundle TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'staged',
                staged_at REAL NOT NULL, PRIMARY KEY(id,revision));
+            CREATE TABLE IF NOT EXISTS self_enroll_events (
+               origin_digest TEXT NOT NULL, created_at REAL NOT NULL);
+            CREATE INDEX IF NOT EXISTS idx_self_enroll_rate ON self_enroll_events(origin_digest,created_at);
             CREATE TABLE IF NOT EXISTS web_invites (
                token_sha256 TEXT PRIMARY KEY, kind TEXT NOT NULL,
                expires_at REAL NOT NULL, consumed_at REAL, created_at REAL NOT NULL);
@@ -123,26 +126,17 @@ class Store:
                 selected = None
                 for j in jobs:
                     signed = SignedProject.model_validate_json(j['signed_project'])
-                    if compatible(constitution, signed.project, node_id):
+                    if (signed.signer_pubkey not in constitution.get('spec', {}).get('trust', {}).get('trusted_signers', [])
+                            or compatible(constitution, signed.project, node_id)):
                         continue
                     financial = signed.project.financial
                     if financial and financial.model == 'test_credits':
                         if not self.credits.job_funded(j['id'], financial.asset_id,
                               financial.credits_per_verified_task * signed.project.work.tasks):
                             continue
-                    # Cooperative fairness: nodes with fewer allocated or completed tasks go first.
-                    counts = self.db.execute('''SELECT n.id, COUNT(t.id) cnt FROM nodes n
-                        LEFT JOIN tasks t ON t.node_id=n.id AND t.job_id=?
-                        WHERE n.revoked=0 GROUP BY n.id''', (j['id'],)).fetchall()
-                    eligible_counts = []
-                    for item in counts:
-                        peer = self.node(item['id'])
-                        if compatible(json.loads(peer['constitution']), signed.project, peer['id']):
-                            eligible_counts.append((peer['id'], item['cnt']))
-                    least = min((ct for _, ct in eligible_counts), default=0)
-                    mine = next((ct for nid, ct in eligible_counts if nid == node_id), 0)
-                    if mine > least:
-                        continue
+                    # Do not block a requester behind an idle peer. Reliable fairness
+                    # requires an online heartbeat / active demand model, which this
+                    # volunteer pilot does not yet implement.
                     t = self.db.execute('SELECT * FROM tasks WHERE job_id=? AND status="pending" ORDER BY task_index LIMIT 1', (j['id'],)).fetchone()
                     if t:
                         selected = (signed, t)
@@ -321,6 +315,48 @@ class Store:
             raise ValueError('invalid, expired, or already used invitation')
         self.db.execute('UPDATE web_invites SET consumed_at=? WHERE token_sha256=?',
                         (time.time(), token_digest(raw)))
+
+    def public_cat_catalog(self):
+        """Only approved executable Cat declarations, never pending proposals or credentials."""
+        with self.lock:
+            rows = self.db.execute('SELECT id,signed_project FROM jobs WHERE status="open" ORDER BY created_at DESC,id LIMIT 100').fetchall()
+            cats = []
+            for row in rows:
+                signed = SignedProject.model_validate_json(row['signed_project'])
+                p = signed.project
+                if p.work.kind != 'sha256_chain_v1' or p.work.iterations > 10000 or p.financial:
+                    continue
+                cats.append({'project_id': p.project_id, 'title': p.title,
+                             'category': p.category, 'purposes': p.purposes,
+                             'commercial': p.commercial, 'creator_key': signed.signer_pubkey,
+                             'source_repo': p.source_repo, 'source_commit': p.source_commit,
+                             'work_kind': p.work.kind, 'work_iterations': p.work.iterations,
+                             'tasks': p.work.tasks, 'financial': p.financial is not None})
+            return cats
+
+    def self_enroll_browser(self, registration, origin_digest: str, *, max_per_hour: int = 5,
+                            max_active: int = 250):
+        """Transactional best-effort pilot limits, with a pseudonymous origin digest."""
+        with self.lock:
+            self.db.execute('BEGIN IMMEDIATE')
+            try:
+                now = time.time()
+                self.db.execute('DELETE FROM self_enroll_events WHERE created_at<?', (now-3600,))
+                recent = self.db.execute('SELECT count(*) FROM self_enroll_events WHERE origin_digest=?',
+                                         (origin_digest,)).fetchone()[0]
+                if recent >= max_per_hour:
+                    raise ValueError('self-enrollment limit reached for this connection; try again later')
+                active = self.db.execute('SELECT count(*) FROM nodes WHERE revoked=0').fetchone()[0]
+                if active >= max_active:
+                    raise ValueError('the pilot Commons is at its contributor capacity')
+                self.add_node(registration.node_id, registration.token, registration.constitution)
+                self.db.execute('INSERT INTO self_enroll_events VALUES(?,?)', (origin_digest,now))
+                self.event('browser_node_joined', 'Visitor enrolled voluntarily without an invitation',
+                           node_id=registration.node_id)
+                self.db.execute('COMMIT')
+            except BaseException:
+                self.db.execute('ROLLBACK')
+                raise
 
     def enroll_browser(self, ticket: str, registration):
         with self.lock:
