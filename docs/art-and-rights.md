@@ -2,7 +2,7 @@
 
 ## Creative direction
 
-PolyC@home takes inspiration from James Thurber’s dry domestic absurdism, and from Python’s tradition of light, recurring cultural references. PolyCats are independent contributors, Catnap is a *proposed* visualization of measured work; Chronicle presently explains it with occasional wit. Safety, consent, and audit logs must never be ambiguous.
+PolyC@home takes inspiration from James Thurber’s dry domestic absurdism, and from Python’s tradition of light, recurring cultural references. PolyCats are independent contributors; Catnap is the act of contributing compute, while its screensaver visualizes measured work. Chronicle explains that work with occasional wit. Safety, consent, and audit logs must never be ambiguous.
 
 ## Thurber provenance to verify
 
@@ -20,3 +20,7 @@ US works actually published in 1930 are generally in the US public domain as of 
 ## HIRDing C@s editorial notes
 
 The name salutes GNU Hurd's recursive HIRD/HURD wordplay, not its code or branding. Our own original domestic jokes should be observational, spare, and technically honest. Suggested original line: “A HIRD is not a herd. The distinction is most apparent at feeding time.” Do not reproduce a specific Thurber illustration or caption without verified rights.
+
+## Licensing workflow
+
+Software scene implementations are BSD 3-Clause; original explanatory prose is CC BY 4.0. Independent illustrations and external assets are **not automatically licensed**. Record provenance, rightsholder permission, attribution and chosen license in [ART-ASSET-MANIFEST.md](ART-ASSET-MANIFEST.md) before distributing them.

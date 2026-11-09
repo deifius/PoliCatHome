@@ -9,6 +9,16 @@
 
 PolyC@home is an open-source experiment in household-owned cooperative computation, drawing inspiration from SETI@home, Folding@home, GNU Hurd, and the cheerful impossibility of organizing cats. Owners retain the right to run their own work first, choose which projects their spare cycles support, and withdraw at any time. Project authors can also specify which contributors they consent to work with. Each side has a constitution.
 
+## License and independence
+
+**Code and protocol:** [BSD 3-Clause](LICENSE) — use, modify, distribute,
+commercialize, fork, or keep improvements private. **Original documentation:**
+[CC BY 4.0](docs/LICENSE-CC-BY-4.0.md). **Independent artwork and Cats:**
+rights are determined asset-by-asset or by the Cat creator, not by this
+repository's blanket licenses. Read the [rights matrix](LICENSING.md) and
+[project philosophy](Philosophy.md). Informed consent to **use a machine** is
+separate from permission to **reuse code**.
+
 **Status: consent-first onboarding on top of the v0.4 pilot — the v0.3 Linux CPU/test-credit pilot plus a runnable browser Catnap, WebGL Gibson, extensible scenes, and an invited Create a Cat workshop.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
 
 ## Start, stop, and remove (consent-first)

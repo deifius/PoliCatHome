@@ -84,3 +84,11 @@ Use original, occasional dry domestic quips; never make emergency messages, poli
 - Browser UI code is in `polyc/web/`, renderer SDK in `polyc/web/scenes/`, HTTP/invite/review routes in `polyc/browser.py`, and private SQLite extensions in `polyc/store.py`. See `docs/CATNAP-BROWSER.md` and `docs/SCENE-SDK.md`.
 - Never let unauthenticated visitors query live private Chronicle data. Never publish tokens or node constitutions inside scene snapshots. No imported executable skin/plugin code. Do not approve arbitrary image execution as if it were the known built-in SHA-256 operation.
 - Test `pytest -q`, `node scripts/test-browser-worker.mjs`, `node scripts/test-browser-protocol.mjs` for protocol compatibility. UI visual/browser reliability testing and five real physical browser participants remain explicitly outstanding.
+
+## Publishing and licensing (2026)
+
+- The project-created implementation, scripts, tests, configs and protocol code are BSD 3-Clause (`LICENSE`). Forks may remain private and proprietary; do not add compulsory contribution or disclosure terms.
+- Original project documentation is CC BY 4.0 (`docs/LICENSE-CC-BY-4.0.md`); code examples are also BSD-licensed for reuse.
+- Independent artwork is **not** automatically licensed; follow `docs/ART-ASSET-MANIFEST.md` and source-specific rights review. Third-party Cat submissions and output rights follow each creator's declarations, not repository defaults.
+- Read `Philosophy.md` for principles, `LICENSING.md` for actual scope. A PoliC is a compute-consent declaration, not a copyright license.
+- Rebuild `polyc/web/downloads/PoliCatHome-source.zip` after editing licensing files and check that it includes the notices, never `runtime/` secrets.

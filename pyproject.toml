@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "polyc-at-home"
 version = "0.4.0"
+license = "BSD-3-Clause"
 description = "PoliC constitutional consent and PolyC cooperative computing five-node pilot with staged OCI project petitions and test-only credit clearing"
 requires-python = ">=3.10"
 dependencies = ["fastapi>=0.110,<1", "uvicorn>=0.30,<1", "pydantic>=2,<3", "PyYAML>=6,<7", "cryptography>=42,<50", "httpx>=0.27,<1", "psutil>=5.9,<9"]

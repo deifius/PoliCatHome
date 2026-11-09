@@ -12,9 +12,9 @@ with ZipFile(target, 'w', ZIP_DEFLATED, compresslevel=9) as archive:
         rel = f.relative_to(root)
         if not f.is_file() or f == target or any(part in exclude_dirs for part in rel.parts):
             continue
-        if rel.parts[0] not in {'polyc', 'scripts', 'tests', 'docs', 'projects'} and rel.as_posix() not in {'pyproject.toml', 'README.md', 'AGENTS.md', 'constitution.example.yaml', '.gitignore', '.dockerignore', 'Dockerfile', 'compose.yaml', 'compose.catbox.yaml'}:
+        if rel.parts[0] not in {'polyc', 'scripts', 'tests', 'docs', 'projects'} and rel.as_posix() not in {'pyproject.toml', 'README.md', 'Philosophy.md', 'LICENSING.md', 'LICENSE', 'AGENTS.md', 'constitution.example.yaml', '.gitignore', '.dockerignore', 'Dockerfile', 'compose.yaml', 'compose.catbox.yaml'}:
             continue
-        if f.suffix not in allowed and f.name not in {'.gitignore', '.dockerignore', 'Dockerfile'}:
+        if f.suffix not in allowed and f.name not in {'.gitignore', '.dockerignore', 'Dockerfile', 'LICENSE'}:
             continue
         if f.is_symlink() or f.stat().st_size > 1024 * 1024:
             continue
