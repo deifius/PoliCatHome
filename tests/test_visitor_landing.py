@@ -34,7 +34,7 @@ def test_disclosures_cover_consent_questions():
     html = (ROOT / 'polyc/web/index.html').read_text()
     tags = Tags(); tags.feed(html)
     for text in ('What exactly happens when I start?', 'Who decides which projects I work for?',
-                 'What information leaves my computer?', 'Can I stop, and is it paid?'):
+                 'What information leaves my computer?', 'Can I stop at any time?'):
         assert text in html
     assert html.count('class="help-tip"') >= 4
     assert html.count('aria-label="More about ') >= 4

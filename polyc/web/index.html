@@ -70,8 +70,8 @@
             <p><strong>A website cannot install or run Docker on your computer.</strong> Browser Catnap cannot run arbitrary containers, perform native GPU tasks or continue after the tab closes. To run an isolated local Catbox, <a href="/web/participate.html#catbox">download PoliC@home and start its Docker worker yourself</a>. Automatic negotiation of arbitrary Catboxes is a future goal, not a current feature.</p>
             <p>The optional <a id="openScreensaverFromExplainer" href="#visualizerDisclosure">Gibson screensaver and other scenes</a> offer a visual account of the Commons, in the tradition of earlier @home projects. Opening the visualizer does <strong>not</strong> contribute compute.</p>
             <div class="faq-disclosures">
-              <details><summary>Can I stop, and is it paid?</summary><p>Pause stops browser work. Revoke also withdraws the node's consent at the Commons when the request succeeds; closing the tab stops computation but is not the same as revocation. For a local Catbox, follow the documented <a href="/web/participate.html#remove">stop, revoke and remove</a> commands.</p></details>
-              <details><summary>Is Catnap paid?</summary><p>No payment is promised. The present browser pilot is a voluntary contribution, with no guaranteed compensation or income.</p></details>
+              <details><summary>Can I stop at any time?</summary><p>Yes. <strong>Pause</strong> stops browser work. <strong>Revoke Consent</strong> also withdraws this node's authorization at the Commons once revocation is confirmed. Closing the tab stops browser computation, but does <strong>not</strong> revoke enrollment. For a local Catbox, use the documented <a href="/web/participate.html#remove">stop, revoke and remove</a> commands.</p></details>
+              <details><summary>Is Catnap paid?</summary><p>No payment is promised, and compensation or income is not guaranteed. The longer-term aim is a protocol for <strong>accountable mutual prosperity</strong>: Cat creators and Catbox contributors could publish transparent terms, matched against each contributor's PoliC and accepted through <strong>informed, enthusiastic collaboration</strong>. Payments and economic matching are <strong>not available in today's browser pilot</strong>.</p></details>
             </div>
           </section>
         </div>
@@ -132,7 +132,7 @@
             <div class="consent-final"><label class="polic-check consent-check"><input id="browserConsent" type="checkbox"><span><strong>I understand and consent to enrollment.</strong> CPU work will only begin if I separately press <strong>Start Catnap</strong>. It may consume electricity and produce heat, and the pacing choice is not a hardware safety limit.</span></label>
               <button id="enrollBtn" class="primary wide" type="button">Enroll in Catnap</button>
               <div id="enrollmentNotice" class="notice inline-feedback" role="status" aria-live="polite"></div>
-              <p class="helper">Enrollment registers your PoliC and a browser identity with this Commons. You can revoke it later. No payment is promised.</p>
+              <p class="helper">Enrollment registers your PoliC and a browser identity with this Commons. You can revoke it later. Today's browser pilot is voluntary; no payment is promised.</p>
             </div>
           </div>
           <div id="participationForm" hidden>
@@ -161,7 +161,7 @@
       </section>
 
       <details id="visualizerDisclosure" class="visualizer-disclosure">
-        <summary class="disclosure-heading"><span>Explore the Gibson and other optional visualizations <small>The graphics do not donate compute.</small></span><span aria-hidden="true">+</span></summary>
+        <summary class="disclosure-heading"><span>Explore @home screensaver options <small>The graphics do not donate compute.</small></span><span aria-hidden="true">+</span></summary>
         <div class="visualizer-inner">
           <p class="section-lead">These are illustrations of the Commons. Until you enroll, any activity displayed is explicitly synthetic preview data. Opening this section does not start Catnap.</p>
           <div aria-label="Screensaver scene" class="scene-nav" role="toolbar">
@@ -253,7 +253,7 @@
 
     <details id="get-source" class="surface source-panel source-disclosure" aria-labelledby="source-title"><summary class="disclosure-heading">Get the source · Run your own Commons <span aria-hidden="true">+</span></summary><div class="source-inner">
       <div class="eyebrow">COPY THE COMMONS / OPEN SOURCE</div>
-      <h2 id="source-title">Take PoliC@home home.</h2>
+      <h2 id="source-title">Bring PoliC@home home.</h2>
       <p>Download a source snapshot, inspect or modify it, and run your <strong>own independent PoliC@home coordinator</strong>. Downloading does not enroll your machine in Catnap or grant this server access to your resources.</p>
       <div class="source-actions"><a class="source-download" href="/web/downloads/PoliCatHome-source.zip" download="PoliCatHome-source.zip">↓ DOWNLOAD SOURCE ZIP</a><a class="source-guide" href="/web/participate.html">SET UP / STOP / REMOVE</a></div>
       <p class="helper"><a href="/web/participate.html#remove">How to pause, revoke and remove everything you run</a>. Browser Catnap needs no Docker installation. A Docker Catbox needs an explicit local shell command; this web page cannot remotely start it.</p>

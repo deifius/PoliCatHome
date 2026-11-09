@@ -18,6 +18,7 @@ The landing page at `/` is written for a newcomer deciding whether to share thei
 - Language must preserve the distinction between **approved Cat** and **trusted creator**. Trusting a creator can permit that creator's future approved Cats, constrained by the rest of the PoliC.
 - The Gibson and other visualizations live in a closed disclosure below the consent flow; the scene engine is not initialized until the visitor opens it. A synthetic scene cannot be mistaken for verified work.
 - Alternatives link to guided native Catbox and Commons paths. A browser page cannot silently start local Docker.
+- The payment FAQ should acknowledge the protocol’s aspiration for accountable mutual prosperity and separately disclose that the current browser SHA-256 pilot has **no implemented payment or economic matching**. Do not imply a guaranteed return, or that a Catbox already brokers compensation.
 
 ## Manual review checklist
 
