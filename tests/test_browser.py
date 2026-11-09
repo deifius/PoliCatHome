@@ -44,11 +44,11 @@ def test_one_use_owner_enrollment_and_policy_constraints(setup):
     bad=client.post('/api/catnap/enroll',json={'invitation':invite(client,'catnap')[0],
         'node':{'node_id':'browser-hot','token':'h'*32,'constitution':temp}})
     assert bad.status_code==422 and 'temperature' in bad.text
-    # Rejecting invalid enroll must not burn its invite, due to atomic transaction.
+    # Empty trust is a safe, idle constitution: visitor can enroll before any Cat is approved.
     no_trust=constitution(pub)
     no_trust['spec']['trust']['trusted_signers']=[]
     assert client.post('/api/catnap/enroll',json={'invitation':invite(client,'catnap')[0],
-        'node':{'node_id':'no-trust','token':'s'*32,'constitution':no_trust}}).status_code==422
+        'node':{'node_id':'no-trust','token':'s'*32,'constitution':no_trust}}).status_code==200
 
 
 def test_create_cat_operator_review_and_contributor_consent(setup):
@@ -140,3 +140,51 @@ def test_browser_webcrypto_created_cat_is_accepted_by_python_coordinator(setup):
     assert client.post(f"/api/tasks/{lease['task_id']}/complete",
         headers={'Authorization':'Bearer '+'j'*32},json={'node_id':'browser-js',
             'lease_id':lease['lease_id'],'digest':digest_result,'duration_seconds':.1}).status_code==200
+
+
+def test_guest_constitution_editor_fields_and_eligibility(setup):
+    client, app, c, sign, pub = setup
+    html = client.get('/').text
+    js = client.get('/web/app.js').text
+    for name in ('categoryScience', 'categoryClimate', 'categoryMedia',
+                 'allowCommercial', 'excludedPurposes', 'taskSeconds',
+                 'sessionMinutes', 'browserConsent', 'previewPolicBtn', 'exportPolicBtn'):
+        assert f'id="{name}"' in html
+    assert 'async function draftPolic()' in js
+    assert 'state.sessionDeadline' in js
+    # A restrictive constitutional configuration is accepted and applied to leases.
+    custom = constitution(pub)
+    custom['spec']['content']['allow_categories'] = ['climate_research']
+    custom['spec']['ethos']['exclude_projects_with_declared_purposes'].append('targeted_advertising')
+    custom['spec']['nice_plus']['cpu_percent_max'] = 10
+    custom['spec']['nice_plus']['task_runtime_seconds_max'] = 5
+    node = {'node_id': 'restricted-browser', 'token': 'r'*32, 'constitution': custom}
+    assert client.post('/api/catnap/enroll', json={
+        'invitation': invite(client, 'catnap')[0], 'node': node}).status_code == 200
+    cat = sign(project_id='research-not-approved', category='open_science')
+    assert client.post('/api/jobs', headers=ROOT, json=cat.model_dump(mode='json')).status_code == 200
+    lease = client.post('/api/lease', headers={'Authorization': 'Bearer ' + 'r'*32},
+        json={'node_id': node['node_id'], 'constitution_digest': policy_digest(custom)})
+    assert lease.status_code == 200
+    assert lease.json()['assignment'] is None
+
+
+def test_polic_editor_buttons_and_visible_validation(setup):
+    client, *_ = setup
+    html = client.get('/').text
+    js_response = client.get('/web/app.js')
+    css_response = client.get('/web/style.css')
+    js = js_response.text
+    assert '>View My PoliC</button>' in html
+    assert '>Download PoliC YAML</button>' in html
+    assert '>Download JSON</button>' in html
+    assert '>Enroll in Catnap</button>' in html
+    for widget in ('policActionNotice', 'enrollmentNotice', 'policEditorReady'):
+        assert f'id="{widget}"' in html
+    assert 'const constitution=registered?state.node.constitution:await draftPolic();' in js
+    assert 'asPolicYaml(constitution)' in js
+    assert "message('policActionNotice'" in js
+    assert "message('enrollmentNotice'" in js
+    assert 'This Commons requires a one-use invitation' in js
+    assert js_response.headers['cache-control'] == 'no-store'
+    assert css_response.headers['cache-control'] == 'no-store'

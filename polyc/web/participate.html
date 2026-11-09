@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PoliC@home · Start, stop, and remove</title><link rel="stylesheet" href="/web/style.css"><script defer src="/web/guide.js"></script></head>
+<body><div class="app-shell"><header class="masthead"><a href="/" class="brand">◈ Poli<span class="accent">C</span>@home</a><span class="tag">YOUR COMPUTE · YOUR CONSENT</span></header>
+<main class="guide">
+<div class="eyebrow">GET STARTED / THREE DISTINCT PATHS</div>
+<h1>Start only what <em>you choose.</em></h1>
+<p class="intro">Browser Catnap, a local Docker Catbox, and running your own Commons are different actions. <strong>Opening this page starts no computing, installs nothing, and gives nobody access to your Docker daemon.</strong> Every path has an explicit stop and removal procedure.</p>
+<div class="path-grid">
+<a class="path-card" href="#browser"><span class="path-num">01</span><strong>Catnap in this browser</strong><small>No installation · Local CPU · Pause/revoke in page</small></a>
+<a class="path-card" href="#catbox"><span class="path-num">02</span><strong>My Docker Catbox</strong><small>Local installation · Bounded, approved CPU tasks</small></a>
+<a class="path-card" href="#commons"><span class="path-num">03</span><strong>My own Commons</strong><small>Docker coordinator · Does not volunteer compute</small></a>
+</div>
+<section class="surface guide-section" id="browser">
+<div class="eyebrow">01 / NO INSTALL</div><h2>Contribute from your browser</h2>
+<p><strong>What runs:</strong> a Web Worker on this device performs only approved built-in SHA-256 tasks. A screen animation is not compute. No Docker, native GPU, background service, or filesystem access is installed.</p>
+<p><strong>Before starting:</strong> choose trusted approved Cat creators, categories, commercial consent and best-effort CPU pacing; preview your PoliC; acknowledge power and heat costs. You must then <strong>Enroll</strong> and separately press <strong>Start Catnap</strong>.</p>
+<p><strong>Stop:</strong> click <strong>Pause</strong> to stop the local worker; click <strong>Revoke Consent</strong> to invalidate your node credential at the coordinator. Closing the page also stops the worker but is not a substitute for revocation.</p>
+<p><strong>Remove:</strong> after successful revocation, clear this site's browser data if you also want to discard saved local settings and keys. Clearing browser storage <em>before</em> revoking can make the stored node token unrecoverable. Server audit history is not erased by revocation.</p>
+<a class="guide-action" href="/#contribute">Configure My PoliC in the browser</a>
+</section>
+<section class="surface guide-section" id="catbox">
+<div class="eyebrow">02 / DOCKER INSTALL ON YOUR COMPUTER</div><h2>Start your own Catbox</h2>
+<p><strong>What runs:</strong> a non-root Docker container running the existing native PoliC@home worker. It can lease approved, signature-checked <code>sha256_chain_v1</code> tasks from a Commons you choose. It continues running after the browser is closed until you pause it, revoke, or Docker stops it. It is <strong>not</strong> an arbitrary OCI workload runner or a GPU agent. It requires Docker Engine/Compose and local shell access; this website cannot launch Docker on your device.</p>
+<div class="disclosure-grid"><div><strong>Limits applied by Docker</strong><p>0.5 of one logical CPU (not half the whole PC), 768 MiB container memory, 64 processes, read-only root filesystem, dropped Linux capabilities, no-new-privileges. Policy also limits task memory and time.</p></div><div><strong>Not guaranteed</strong><p>No CPU/GPU temperature telemetry, electricity ceiling, GPU usage, or full VM isolation. Docker shares a kernel and allows outbound network connectivity. Do not execute unknown or uploaded images.</p></div><div><strong>Your consent</strong><p>The enrollment script displays the Cat catalog and complete resource disclosure, asks which creator keys to trust, and requires you to type <code>I CONSENT</code>. Enrollment starts no work.</p></div></div>
+<h3>Get the source and check your tools</h3>
+<p>Use a Linux or WSL terminal. Download <a href="/web/downloads/PoliCatHome-source.zip" download="PoliCatHome-source.zip">the complete source snapshot</a> (not a Git-history clone). Extract into <code>~/projects</code> on WSL (not <code>/mnt/c</code>, where file permissions may expose secrets). From its extracted directory:</p>
+<div class="command"><pre id="cmd-check">docker compose version
+python3 --version</pre><button class="secondary" data-copy="cmd-check">Copy</button></div>
+<p>Confirm Docker runs correctly. Docker group access is effectively root-equivalent; review what you run before trusting this software.</p>
+<h3>Enroll, then start</h3>
+<p>For your own locally hosted Commons at <code>http://127.0.0.1:8765</code>:</p>
+<div class="command"><pre id="cmd-cat-enroll">bash scripts/catbox-local.sh enroll
+bash scripts/catbox-local.sh start
+bash scripts/catbox-local.sh status</pre><button class="secondary" data-copy="cmd-cat-enroll">Copy</button></div>
+<p>To contribute from your own Docker machine to an <strong>external HTTPS</strong> Commons instead, enroll against its actual URL:</p>
+<div class="command"><pre id="cmd-cat-remote">bash scripts/catbox-local.sh enroll https://your-commons.example
+bash scripts/catbox-local.sh start</pre><button class="secondary" data-copy="cmd-cat-remote">Copy</button></div>
+<p><strong>The Catbox starts with its own Compose file and needs no Commons administrator token.</strong> It can share the local Commons network when both are launched from this checkout. The coordinator must explicitly enable anonymous self-enrollment. The local setup does by default. Enrollment with no trusted Cats is valid but idle. Trust in a signer includes that creator's <em>future</em> operator-approved Cats under your other restrictions. Changing your registered PoliC currently requires revocation and re-enrollment.</p>
+<h3>Inspect / pause / resume</h3>
+<div class="command"><pre id="cmd-cat-control">bash scripts/catbox-local.sh logs
+bash scripts/catbox-local.sh pause
+bash scripts/catbox-local.sh resume</pre><button class="secondary" data-copy="cmd-cat-control">Copy</button></div>
+<p><strong>Pause</strong> immediately stops your own container and retains consent/credentials so you can resume. <strong>Revoke</strong> stops the container and tells the Commons to reject future leases. Neither deletes the coordinator's audit history.</p>
+<h3>Revoke and completely remove your Catbox</h3>
+<div class="command"><pre id="cmd-cat-remove">bash scripts/catbox-local.sh revoke
+bash scripts/catbox-local.sh remove</pre><button class="secondary" data-copy="cmd-cat-remove">Copy</button></div>
+<p><strong>Remove</strong> confirms coordinator revocation, deletes only this Catbox's container and local credentials, and keeps your source checkout and the independent Commons intact. If the server is offline, it <strong>stops locally but keeps the token</strong> so you can retry revocation; it never silently pretends consent was revoked.</p>
+</section>
+<section class="surface guide-section" id="commons">
+<div class="eyebrow">03 / HOST YOUR OWN SERVICE</div><h2>Run your own Commons in Docker</h2>
+<p><strong>What runs:</strong> a coordinator and browser UI, bound to <code>127.0.0.1:8765</code> on the Docker host; a persistent Docker volume holds its SQLite DB. This is <strong>not</strong> a Catbox and does <strong>not</strong> donate your CPU/GPU to jobs simply by hosting.</p>
+<h3>Install and start</h3>
+<p><a href="/web/downloads/PoliCatHome-source.zip" download="PoliCatHome-source.zip">Download source ZIP</a>. It contains the launcher scripts, current source, tests, and docs, with no existing tokens or runtime database. Unzip it in your own Linux/WSL directory.</p>
+<div class="command"><pre id="cmd-server">unzip PoliCatHome-source.zip
+cd PoliCatHome-source
+bash scripts/start-local.sh
+# Open http://localhost:8765
+# Keep runtime/admin-token.txt private</pre><button class="secondary" data-copy="cmd-server">Copy</button></div>
+<p>The launcher creates an administrator secret under <code>runtime/admin-token.txt</code>. Treat this as an account password. Never enter it into an untrusted website, publish it, or place it in a source repository.</p>
+<h3>Stop or restart (keeps everything)</h3>
+<div class="command"><pre id="cmd-server-stop">bash scripts/stop-local.sh
+# restart later:
+bash scripts/start-local.sh</pre><button class="secondary" data-copy="cmd-server-stop">Copy</button></div>
+<p>Stop leaves the database volume and admin token in place, so your Commons can resume.</p>
+<h3>Delete your own Commons and its data</h3>
+<div class="command"><pre id="cmd-server-remove"># First revoke/remove any native Catbox:
+bash scripts/catbox-local.sh remove
+# Then explicitly purge the Commons:
+bash scripts/remove-local.sh --purge-data</pre><button class="secondary" data-copy="cmd-server-remove">Copy</button></div>
+<p>The removal script demands the exact phrase <code>DELETE MY COMMONS</code> before deleting the coordinator container, its Docker database volume, and the local admin-token file. This is <strong>irreversible</strong> for local history and receipts unless you made backups. It does not delete unrelated Docker projects, your source checkout, or audit copies held by other participants.</p>
+<p><strong>Public deployment warning:</strong> the included Docker configuration is loopback-only for local testing. Do not forward port 8765 directly to the Internet. A public Commons needs HTTPS, ingress controls, abuse controls, operational backup/restore planning, secret handling, and an independent security review.</p>
+</section>
+<section class="surface guide-section" id="remove"><h2>Removal means three different things</h2>
+<table class="guide-table"><thead><tr><th>Mode</th><th>Stop computing</th><th>Revoke authorization</th><th>Delete local artifacts</th></tr></thead>
+<tbody><tr><td>Browser Catnap</td><td>Pause / close tab</td><td>Revoke Consent button</td><td>Clear site data after revocation</td></tr><tr><td>Native Catbox</td><td><code>catbox-local.sh pause</code></td><td><code>catbox-local.sh revoke</code></td><td><code>catbox-local.sh remove</code></td></tr><tr><td>Commons server</td><td><code>stop-local.sh</code></td><td>Revoke Catbox nodes first</td><td><code>remove-local.sh --purge-data</code></td></tr></tbody></table>
+<p class="helper">No workflow promises deletion of Chronicle events or receipts stored by other Commons participants. Neither a website nor a coordinator can start local Docker without an installed, explicitly authorized local component.</p>
+</section>
+<p class="guide-bottom"><a class="guide-action" href="/">Return to PoliC@home</a> <a href="/web/self-host.html">Legacy self-host guide</a> · <a href="/web/licenses.html">Freedom and licensing</a></p>
+<p id="copyFeedback" class="notice" role="status" aria-live="polite"></p>
+</main><footer>PoliC@home · No PolyC without PoliC · Culpability with clarity</footer></div></body></html>

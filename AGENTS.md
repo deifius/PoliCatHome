@@ -72,7 +72,7 @@ If adding a new HIRD backend, implement `create`, `start`, `pause`, `stop`, `des
 
 ## Naming / editorial voice
 
-PoliC = Candid Constitutional Consent; PolyC = Coordinated Computational Care. HIRD = HIRD Isolated Resource Domain. HIRDing C@s = decentralized coordination. PolyC Daemon = worker/host agent. Chronicle = measured activity. Catnap = a *future* truthful visualization. Nice Plus = application-level deference, **not** Linux nice greater than +19.
+PoliC = Candid Constitutional Consent; PolyC = Coordinated Computational Care. HIRD = HIRD Isolated Resource Domain. HIRDing C@s = decentralized coordination. PolyC Daemon = worker/host agent. Chronicle = measured activity. Catnap = an explicitly opted-in contribution workflow (with an optional truthful visualization). Nice Plus = application-level deference, **not** Linux nice greater than +19.
 
 Use original, occasional dry domestic quips; never make emergency messages, policy authorization, security outcomes or audit records depend on understanding a joke. The cats may be fanciful. The enforcement must not be.
 
@@ -84,3 +84,20 @@ Use original, occasional dry domestic quips; never make emergency messages, poli
 - Browser UI code is in `polyc/web/`, renderer SDK in `polyc/web/scenes/`, HTTP/invite/review routes in `polyc/browser.py`, and private SQLite extensions in `polyc/store.py`. See `docs/CATNAP-BROWSER.md` and `docs/SCENE-SDK.md`.
 - Never let unauthenticated visitors query live private Chronicle data. Never publish tokens or node constitutions inside scene snapshots. No imported executable skin/plugin code. Do not approve arbitrary image execution as if it were the known built-in SHA-256 operation.
 - Test `pytest -q`, `node scripts/test-browser-worker.mjs`, `node scripts/test-browser-protocol.mjs` for protocol compatibility. UI visual/browser reliability testing and five real physical browser participants remain explicitly outstanding.
+
+## Publishing and licensing (2026)
+
+- The project-created implementation, scripts, tests, configs and protocol code are BSD 3-Clause (`LICENSE`). Forks may remain private and proprietary; do not add compulsory contribution or disclosure terms.
+- Original project documentation is CC BY 4.0 (`docs/LICENSE-CC-BY-4.0.md`); code examples are also BSD-licensed for reuse.
+- Independent artwork is **not** automatically licensed; follow `docs/ART-ASSET-MANIFEST.md` and source-specific rights review. Third-party Cat submissions and output rights follow each creator's declarations, not repository defaults.
+- Read `Philosophy.md` for principles, `LICENSING.md` for actual scope. A PoliC is a compute-consent declaration, not a copyright license.
+- Rebuild `polyc/web/downloads/PoliCatHome-source.zip` after editing licensing files and check that it includes the notices, never `runtime/` secrets.
+
+## Repository hygiene
+
+- `polyc/` is the only implementation; `polyc/web/` is the only shipped browser frontend.
+- Do not create root-level aliases of modules, docs, scripts, tests, or a nested repository.
+- Read `docs/REPOSITORY-LAYOUT.md` before moving anything. A legacy checkout may
+  have distinct edits in duplicate files; use `scripts/tidy-repository.py` to
+  back them up, never delete them silently.
+- Never move, wipe, package, or publish `runtime/` or Docker persistent volumes.

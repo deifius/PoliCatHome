@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+runtime
+.env
+__pycache__
+.pytest_cache
+*.py[cod]
+*.pem
+*.key
+*.sqlite*
+*.db*
+*.log
+polyc-at-home

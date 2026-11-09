@@ -1,0 +1,24 @@
+# Optional native Catnap Catbox. Standalone Compose file (never needs Commons admin token).
+# Run via scripts/catbox-local.sh. Local Commons must be running from the SAME checkout
+# to share the Compose project network when using http://commons:8765.
+# It executes ONLY the bundled, signed SHA-256 pilot workload. No Docker socket.
+services:
+  catbox:
+    build: .
+    user: "${CATBOX_UID:?Run scripts/catbox-local.sh}:${CATBOX_GID:?Run scripts/catbox-local.sh}"
+    entrypoint: ["polyc", "worker"]
+    command: ["--config", "/owner/owner.yaml", "--server", "${CATBOX_SERVER:-http://commons:8765}", "--pause-file", "/owner/paused", "--interval", "1.0"]
+    volumes:
+      - ./runtime/catbox-owner:/owner:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 768m
+    cpus: 0.50
+    init: true
+    restart: "no"
+    # Networking is needed to reach the local Commons; this is NOT a no-network sandbox.
+    # Never load or run untrusted OCI images through this pilot.

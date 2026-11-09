@@ -77,3 +77,12 @@ polyc submit-submission --signed runtime/signed-submission.json \
 ```
 
 > The cats will consider your petition. Filing it under the saucer does not constitute approval.
+
+## Submitted Cat licensing
+
+A Cat is not automatically BSD-licensed just because the PoliC@home software
+is. The Cat author/rightsholder must declare the applicable licenses for the
+Cat's source code, image, datasets and outputs. Work is eligible only when
+contributors' PoliCs and the Cat's declared conditions are compatible. Node
+participation is not an automatic assignment of copyright or other rights.
+See [../LICENSING.md](../LICENSING.md).
