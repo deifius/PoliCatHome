@@ -12,6 +12,7 @@ safe migration procedure are explained in [Repository layout](REPOSITORY-LAYOUT.
 
 ## Browser and scenes
 
+- [Visitor landing](VISITOR-LANDING.md): consent-first information architecture and review checklist
 - [Browser Catnap](CATNAP-BROWSER.md): capabilities and restrictions
 - [Scene SDK](SCENE-SDK.md): WebGL/screensaver integration
 

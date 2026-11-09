@@ -36,7 +36,7 @@ function switchScene(id){if(!scenes[id])return;state.scene?.destroy();const canv
   $('sceneTitle').textContent=scenes[state.sceneId].title;
   for(const b of document.querySelectorAll('[data-scene]'))b.classList.toggle('active',b.dataset.scene===state.sceneId);
 }
-function draw(t){requestAnimationFrame(draw);const limit=state.run?12:30; if(t-state.lastFrame<1000/limit)return;state.lastFrame=t;
+function draw(t){requestAnimationFrame(draw);if(!$('visualizerDisclosure').open)return;const limit=state.run?12:30; if(t-state.lastFrame<1000/limit)return;state.lastFrame=t;
   $('sceneClock').textContent=new Date().toLocaleTimeString('en-GB',{hour12:false});
   try{state.scene?.draw(t/1000);}catch(err){console.error('scene error',err);if(state.sceneId!=='terminal')switchScene('terminal');}
 }
@@ -102,7 +102,7 @@ async function computeLoop(){const id=state.node.node_id,token=state.node.token;
   }
   $('workStatus').textContent='PAUSED';
 }
-function stopCompute(){state.run=false;state.sessionDeadline=0;state.abortTask?.();state.worker?.terminate();state.worker=null;$('workStatus').textContent='PAUSED';$('workProgress').style.width='0%';}
+function stopCompute(){state.run=false;state.sessionDeadline=0;state.abortTask?.();state.worker?.terminate();state.worker=null;$('workStatus').textContent='PAUSED';$('workProgress').style.width='0%';updateVisitorStatus();}
 const declaredPurpose=/^[A-Za-z0-9_-]{1,80}$/;
 function selectedCategories(){const choices=[['categoryScience','open_science'],['categoryClimate','climate_research'],['categoryMedia','open_media']];
   return choices.filter(([id])=>$(id).checked).map(([,category])=>category);
@@ -200,11 +200,18 @@ async function enroll(){
     message('catnapNotice',`Not enrolled: ${err.message}`,true);
   }finally{btn.disabled=false;}
 }
+function updateVisitorStatus(){
+  const status=$('visitorStatus');if(!status)return;
+  const enrolled=!!state.node;status.classList.toggle('is-enrolled',enrolled&&!state.run);status.classList.toggle('is-running',state.run);
+  status.textContent=!enrolled?'Not enrolled · CPU work is off':state.run?'Catnap enabled · Browser work may be running':'Enrolled · CPU work is off until you press Start';
+  const line=$('postEnrollIntro');if(line)line.textContent=state.run?'Catnap is enabled. Use Pause to stop local work or Revoke Consent to withdraw permission.':'Your PoliC is enrolled. Your CPU is not working until you press Start.';
+}
 function showEnrolled(){$('enrollForm').hidden=!!state.node;$('participationForm').hidden=!state.node;
   if(state.node){$('nodeIdentity').textContent=state.node.node_id;
     const c=state.node.constitution.spec;
     $('activePolicSummary').textContent=`Registered PoliC: ${c.trust.trusted_signers.length} trusted creator(s) · ${c.nice_plus.cpu_percent_max}% best-effort CPU pacing · ${c.nice_plus.task_runtime_seconds_max}s task ceiling · ${c.content.allow_categories.join(', ')} · Commercial ${c.ethos.allow_commercial_projects?'permitted':'excluded'}. ${c.trust.trusted_signers.length?'Nothing computes until you press Start.':'No Cats authorized; this session will stay idle.'} To amend your PoliC, revoke and enroll again.`;
   }
+  updateVisitorStatus();
 }
 async function revoke(){if(!state.node)return;stopCompute();try{
   await api(`/api/nodes/${encodeURIComponent(state.node.node_id)}/revoke`,'POST',{},state.node.token);
@@ -273,9 +280,31 @@ async function proposals(){if(!state.adminToken)return;
     }el.append(card);
   }
 }
-function wireUI(){for(const btn of document.querySelectorAll('[data-panel]'))btn.onclick=()=>{
-  for(const x of document.querySelectorAll('[data-panel]'))x.classList.toggle('selected',x===btn);
+function selectExplainer(step, moveFocus=false){
+  const buttons=[...document.querySelectorAll('[data-explain]')];
+  for(const button of buttons){
+    const selected=button.dataset.explain===String(step);
+    button.classList.toggle('active',selected);
+    button.setAttribute('aria-selected',String(selected));
+    button.tabIndex=selected?0:-1;
+    $(button.getAttribute('aria-controls')).hidden=!selected;
+    if(selected&&moveFocus)button.focus();
+  }
+}
+function wireUI(){
+  const explainButtons=[...document.querySelectorAll('[data-explain]')];
+  for(const [index,button] of explainButtons.entries()){
+    button.addEventListener('click',()=>selectExplainer(button.dataset.explain));
+    button.addEventListener('keydown',event=>{
+      const next=event.key==='ArrowRight'?index+1:event.key==='ArrowLeft'?index-1:event.key==='Home'?0:event.key==='End'?explainButtons.length-1:null;
+      if(next===null)return;
+      event.preventDefault();selectExplainer(explainButtons[(next+explainButtons.length)%explainButtons.length].dataset.explain,true);
+    });
+  }
+  for(const btn of document.querySelectorAll('[data-panel]'))btn.onclick=()=>{ 
+  for(const x of document.querySelectorAll('[data-panel]')){x.classList.toggle('selected',x===btn);if(x.matches('.main-nav [data-panel]')){if(x===btn)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current');}}
   for(const x of document.querySelectorAll('.panel'))x.classList.toggle('visible',x.id===btn.dataset.panel);
+  if(!btn.closest('.main-nav'))$(btn.dataset.panel)?.scrollIntoView({block:'start'});
 };
   for(const btn of document.querySelectorAll('[data-scene]'))btn.onclick=()=>switchScene(btn.dataset.scene);
   $('fullscreenBtn').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else $('screenShell').requestFullscreen?.();};
@@ -292,7 +321,7 @@ function wireUI(){for(const btn of document.querySelectorAll('[data-panel]'))btn
     message('catnapNotice',`Skin imported: ${skin.name}. Only colors and labels were read—no code executed.`);
   }catch(err){message('catnapNotice',err.message,true);}};
   $('enrollBtn').onclick=enroll;
-  $('startBtn').onclick=()=>{if(!state.node||state.run)return;state.sessionDeadline=state.sessionMinutes?Date.now()+state.sessionMinutes*60000:0;state.run=true;message('catnapNotice','Catnap started. Every assigned Cat is locally verified and consent checked.');computeLoop();};
+  $('startBtn').onclick=()=>{if(!state.node||state.run)return;state.sessionDeadline=state.sessionMinutes?Date.now()+state.sessionMinutes*60000:0;state.run=true;updateVisitorStatus();message('catnapNotice','Catnap started. Every assigned Cat is locally verified and consent checked.');computeLoop();};
   $('pauseBtn').onclick=()=>{stopCompute();message('catnapNotice','Catnap paused locally. No new leases will be requested.');};
   $('revokeBtn').onclick=revoke;
   $('catFunding').onchange=e=>$('fundingOptions').hidden=e.target.value!=='test_credits';
@@ -309,12 +338,16 @@ function wireUI(){for(const btn of document.querySelectorAll('[data-panel]'))btn
     $('inviteOutput').textContent=r.invitations.join('\n');message('adminNotice',`${r.invitations.length} one-use ${r.kind} invitations generated. Share each privately.`);
   }catch(err){message('adminNotice',err.message,true);}};
   $('refreshProposals').onclick=()=>proposals().catch(err=>message('adminNotice',err.message,true));
+  $('openScreensaverFromExplainer').addEventListener('click',()=>{$('visualizerDisclosure').open=true;});
+  const visualizer=$('visualizerDisclosure');visualizer.addEventListener('toggle',()=>{
+    if(visualizer.open)switchScene(state.sceneId);else{state.scene?.destroy();state.scene=null;}
+  });
   document.addEventListener('visibilitychange',()=>{if(document.hidden)state.abortTask?.();});
   window.addEventListener('pagehide',()=>{stopCompute();});
 }
 function init(){try{const n=JSON.parse(sessionStorage.getItem('polyc.catnap.node.v1'));if(n?.node_id&&n?.token&&n?.constitution)state.node=n;}catch{sessionStorage.removeItem('polyc.catnap.node.v1');}
   showEnrolled();if(!state.node)$('catnapName').value='browser-cat-'+hex(crypto.getRandomValues(new Uint8Array(3)));const saved=localStorage.getItem('polyc.catnap.skin');if(saved&&themes[saved]){$('skinSelect').value=saved;state.theme=themes[saved];}
-  wireUI();loadEnrollmentOptions();refreshCatalog();$('policEditorReady').textContent='PoliC editor ready. You can preview a draft before enrolling.';switchScene('gibson');presentSnapshot(demoSnapshot());requestAnimationFrame(draw);
+  wireUI();loadEnrollmentOptions();refreshCatalog();$('policEditorReady').textContent='PoliC editor ready. You can preview a draft before enrolling.';presentSnapshot(demoSnapshot());requestAnimationFrame(draw);
   if(state.node)refreshLive();setInterval(refreshLive,2500);
 }
 init();
