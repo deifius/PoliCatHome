@@ -21,6 +21,21 @@ separate from permission to **reuse code**.
 
 **Status: consent-first onboarding on top of the v0.4 pilot — the v0.3 Linux CPU/test-credit pilot plus a runnable browser Catnap, WebGL Gibson, extensible scenes, and an invited Create a Cat workshop.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
 
+## Where the code lives
+
+**One implementation, not several:** `polyc/` is the authoritative Python
+package; `polyc/web/` is its browser app; `tests/`, `docs/`, `scripts/` and
+`projects/` each have one purpose. Root-level Docker/Compose files and
+`pyproject.toml` stay at the top for standard tooling. Start with the
+[documentation index](docs/INDEX.md) or see the
+[repository map and safe cleanup guide](docs/REPOSITORY-LAYOUT.md).
+
+If an older ZIP was extracted on top of your checkout, there may be obsolete
+root-level copies (`api.py`, `web/`, `polyc-at-home/`, repeated `.md` files).
+**Do not delete them blindly**: run `python3 scripts/tidy-repository.py` to
+preview a non-destructive cleanup, then use `--apply` to move them to a sibling
+backup while retaining `runtime/` and your Commons database.
+
 ## Start, stop, and remove (consent-first)
 
 **Three distinct workflows:** browser Catnap (no install), native Docker
