@@ -1,331 +1,142 @@
-# PolyC@home / PoliC@home
+# PoliC@home
 
-**Constitutional computing for the cooperative commons.**
+**Your compute. Your constitution. Your choice.**
 
-> **No PolyC without PoliC. Culpability with Clarity.**
+> **No PolyC without PoliC. Culpability with clarity.**
 
-- **PoliC** — **Candid Constitutional Consent**: *whether* a node and a project have consented to cooperate.
-- **PolyC** — **Coordinated Computational Care**: *how* consenting computation is scheduled, supervised, and reported.
+PoliC@home is an experimental, open-source network for voluntarily sharing computing power. It is inspired by distributed projects such as SETI@home and by the idea that each participating machine should remain under its owner's control.
 
-PolyC@home is an open-source experiment in household-owned cooperative computation, drawing inspiration from SETI@home, Folding@home, GNU Hurd, and the cheerful impossibility of organizing cats. Owners retain the right to run their own work first, choose which projects their spare cycles support, and withdraw at any time. Project authors can also specify which contributors they consent to work with. Each side has a constitution.
+**PoliC** (*Candid Constitutional Consent*) says *what work may run, for whom, and under what limits*. **PolyC** (*Coordinated Computational Care*) matches consenting participants with approved work and records what happened. You can contribute without administering a server.
 
-## License and independence
+## Choose your way to participate
 
-**Code and protocol:** [BSD 3-Clause](LICENSE) — use, modify, distribute,
-commercialize, fork, or keep improvements private. **Original documentation:**
-[CC BY 4.0](docs/LICENSE-CC-BY-4.0.md). **Independent artwork and Cats:**
-rights are determined asset-by-asset or by the Cat creator, not by this
-repository's blanket licenses. Read the [rights matrix](LICENSING.md) and
-[project philosophy](Philosophy.md). Informed consent to **use a machine** is
-separate from permission to **reuse code**.
+| I want to… | What I need | What actually runs |
+| --- | --- | --- |
+| **Start Catnap in my browser** | A browser and a participating Commons | An opt-in CPU Web Worker; no installation |
+| **Run my own Catbox** | Linux/WSL, Docker Compose, and a source checkout | A locally controlled, resource-limited Docker worker |
+| **Host a Commons** | Linux/WSL and Docker Compose | A coordinator and website; **not** a volunteer worker |
 
-**Status: consent-first onboarding on top of the v0.4 pilot — the v0.3 Linux CPU/test-credit pilot plus a runnable browser Catnap, WebGL Gibson, extensible scenes, and an invited Create a Cat workshop.** A coordinator plus **five independently configured worker agents** have successfully completed 25 deterministic tasks in a star network on one Linux machine. The pilot uses a constrained **process runner**, not a VM. **It validates and stages signed OCI project paperwork and can issue, transfer, reserve and settle NONCASH test credits for its built-in CPU work. It cannot execute OCI images, accept arbitrary third-party code, execute ML models, manage GPUs, provide secure multi-tenant isolation, meter household electricity, enforce verified ideological judgments, or make real-money payments.** Five separate physical households have not yet been tested.
+**Catnap** means contributing compute. A **Cat** is a submitted project. **Create a Cat** submits a project; it does *not* create a worker. A **Catbox** is the isolated environment used to execute a Cat's work. In today's browser pilot, that environment is a Web Worker rather than a Docker container.
 
-## Where the code lives
+## Universal running rules
 
-**One implementation, not several:** `polyc/` is the authoritative Python
-package; `polyc/web/` is its browser app; `tests/`, `docs/`, `scripts/` and
-`projects/` each have one purpose. Root-level Docker/Compose files and
-`pyproject.toml` stay at the top for standard tooling. Start with the
-[documentation index](docs/INDEX.md) or see the
-[repository map and safe cleanup guide](docs/REPOSITORY-LAYOUT.md).
+1. **Nothing starts just because you visit.** Reading the site, previewing a PoliC, or watching Gibson contributes no compute.
+2. **Consent precedes execution.** Review what can run, select trusted Cat creators, accept the resource disclosure, **enroll**, and separately **start** Catnap.
+3. **No implicit trust.** An empty creator allowlist is valid and receives *no work*. Trusting a creator also permits their *future operator-approved Cats*, subject to your other PoliC restrictions.
+4. **Your PoliC limits participation.** The Commons checks eligible Cats, and the local worker checks task signatures and policy again. Declared project purposes are not independently audited.
+5. **Stop is not revoke; revoke is not erase.** Pausing stops local execution. Revocation invalidates future authorization. Neither erases already recorded work or the Commons Chronicle.
+6. **Use the safeguards that actually exist.** Browser CPU pacing is best-effort. Docker quotas constrain a Catbox, but neither mode currently guarantees safe temperatures, power consumption, or VM-grade isolation.
+7. **Protect local credentials.** Keep `runtime/` private. Don't publish node tokens or Commons administrator credentials. Installing or running Docker requires informed trust in the code and your own host environment.
 
-If an older ZIP was extracted on top of your checkout, there may be obsolete
-root-level copies (`api.py`, `web/`, `polyc-at-home/`, repeated `.md` files).
-**Do not delete them blindly**: run `python3 scripts/tidy-repository.py` to
-preview a non-destructive cleanup, then use `--apply` to move them to a sibling
-backup while retaining `runtime/` and your Commons database.
+## Define your PoliC before joining
 
-## Start, stop, and remove (consent-first)
+Your PoliC is your own set of conditions: **which Cat creators you trust**, **which categories and declared purposes are allowed**, **whether commercial work is acceptable**, and **how much time and CPU you want to offer**. Browser contributors configure these in the on-page editor; native Catbox contributors use the interactive enrollment wizard. Both present the disclosure **before** asking for consent.
 
-**Three distinct workflows:** browser Catnap (no install), native Docker
-Catbox (approved built-in CPU work only), and independent Docker Commons
-coordinator (does not donate work). The website now offers an end-to-end
-setup / consent / shutdown / cleanup guide at `/web/participate.html`.
-See [Consent and lifecycle runbook](docs/CONSENT-AND-LIFECYCLE.md) before
-running any containers. Nothing installed or executed merely by visiting.
+The starter [`constitution.example.yaml`](constitution.example.yaml) illustrates the broader vision, **not** a copy-and-paste production policy: some GPU, energy, and thermal settings in that example are not supported by today's pilot. Use the live browser editor or Catbox wizard to register the policy this version can actually enforce. To change a registered PoliC, revoke and enroll again.
+
+## 1. Start Catnap in your browser — no installation
+
+Open a participating PoliC@home Commons, select **Catnap**, and follow this sequence:
+
+1. **Choose Cats.** Review the catalog of operator-approved Cats and deliberately select the creators you trust. Choosing none is allowed; you will remain idle.
+2. **Make your PoliC.** Select eligible categories, excluded purposes, commercial-use consent, best-effort CPU pacing, task timeout, and session duration. Use **Preview My PoliC** or **Export PoliC JSON** to inspect it before joining.
+3. **Understand the limits.** This browser runs only the built-in, bounded **SHA-256 CPU pilot**. It may use electricity and create heat. It cannot run arbitrary Docker images, use native GPUs, continue after the tab closes, or enforce a hardware temperature limit.
+4. **Enroll in Catnap.** Acknowledge the resource disclosure and enroll. Enrollment alone does **not** start work. Where self-enrollment is enabled, no invitation or operator account is needed.
+5. **Start Catnap.** Press **Start Catnap** to contribute CPU on this device. Inspect task receipts and the Chronicle, **Pause** to stop, and **Revoke Consent** to end authorization.
+
+After confirmed revocation, you may clear this site's browser data to remove local settings and tokens. **Revoke first:** clearing data prematurely can lose the credential needed to revoke at the Commons. Closing the tab stops local browser computation but does *not* revoke registration.
+
+A local Commons started using the instructions below is available at **http://localhost:8765/**; its full guided onboarding page is **http://localhost:8765/web/participate.html**.
+
+## 2. Run your first native Catbox — Docker on your machine
+
+A Catbox is optional for browser Catnap. Choose this mode when you want a separately controlled worker that can keep running after you close the website.
+
+**Before you begin:** You need Docker Engine with `docker compose` v2, Python 3, and the PoliC@home source. On Windows 11, run the commands from **Ubuntu in WSL2** with a working Docker daemon. Store the checkout on the Linux filesystem (for example `~/projects/PoliCatHome`), **not** under `/mnt/c/`, because Catbox enrollment writes a private token.
+
+Get the **source ZIP** from a Commons' **Get the source** page (`/web/downloads/PoliCatHome-source.zip`), then extract it into your Linux/WSL projects directory. This is a source snapshot, not a Git clone with history. From the extracted repository root:
 
 ```bash
-# Start your own local coordinator (not a worker):
-bash scripts/start-local.sh
-# Create a private Catbox identity with explicit consent; then start it:
+docker compose version
+python3 --version
+
+# Enroll with an existing Commons running on this computer:
 bash scripts/catbox-local.sh enroll
-bash scripts/catbox-local.sh start
-# Stop and remove Catbox after remote revocation:
-bash scripts/catbox-local.sh remove
-# Stop server, preserving data:
-bash scripts/stop-local.sh
-# Or destroy local coordinator DB volume and admin token (requires typed confirmation):
-bash scripts/remove-local.sh --purge-data
+
+# OR enroll with a separately hosted Commons using HTTPS:
+# bash scripts/catbox-local.sh enroll https://your-commons.example
 ```
 
-Native Catbox has a hard Docker 0.5 CPU / 768 MiB quota but **cannot enforce
-host temperature or electricity limits**, and its network access is not
-firewalled. It runs only the packaged signed SHA-256 pilot task — no arbitrary
-OCI artifacts, GPU workloads or payments. Remote HTTPS Commons are supported
-for native Catbox enrollment only when self-enrollment is enabled.
+The enrollment wizard shows the approved Cat catalog, trusted signing keys, commercial-use choice, execution limits, network disclosure, and retention notes. **Choose your Cats and type `I CONSENT`** to register. Any other response cancels. Your new Catbox is **still idle** after enrollment.
 
-## Launch locally in Docker (Windows 11 / WSL2)
+```bash
+bash scripts/catbox-local.sh start     # explicit first start
+bash scripts/catbox-local.sh status    # confirm container state
+bash scripts/catbox-local.sh logs      # inspect activity (Ctrl+C exits log view)
+```
 
-With Docker Desktop running and WSL integration enabled, extract this source ZIP, `cd` to the repository root, and run:
+**The current Catbox only executes approved, signed, built-in SHA-256 tasks.** Docker enforces a maximum of **0.5 of one logical CPU**, **768 MiB** container memory, and **64 PIDs**; the task worker also has runtime and memory limits. There is no Docker socket mount, GPU execution, arbitrary uploaded image execution, thermal kill switch, or guaranteed electricity limit. Outbound container networking is enabled. A container is not a full security boundary for untrusted workloads.
+
+**If you selected no trusted creator, a successfully started Catbox will remain idle.** If your Commons has no approved Cats yet, you can enroll idle, or follow the [local acceptance test](docs/LOCAL-TEST.md) to learn how a test Cat is approved. To change your registered PoliC, revoke and re-enroll; live amendment is not implemented yet.
+
+### Stop, resume, revoke, remove
+
+```bash
+bash scripts/catbox-local.sh pause     # stops local container; consent retained
+bash scripts/catbox-local.sh resume    # deliberately start again
+bash scripts/catbox-local.sh revoke    # stop and revoke at the Commons
+bash scripts/catbox-local.sh remove    # revoke, remove Catbox and local credentials
+```
+
+`remove` stops the worker and **requires confirmation of remote revocation** before deleting the local token. If the Commons is unreachable, the Catbox stays stopped and retains the credential so you can retry. It does **not** delete the Commons database, receipts, or your source checkout. Catbox operations need **no Commons administrator token**.
+
+## 3. Run your own Commons — optional
+
+If you don't have a Commons to join, you can host one locally. This starts the coordinator and its browser UI, **not** a Catbox or a compute contribution. Use the source ZIP above or a checkout you trust. From its root:
 
 ```bash
 bash scripts/start-local.sh
+# Open http://localhost:8765/ in your browser
+
+bash scripts/commons-local.sh status
+bash scripts/commons-local.sh logs
+bash scripts/stop-local.sh             # stop; preserve database and credentials
+bash scripts/start-local.sh            # restart later
 ```
 
-Open **http://localhost:8765/** in your Windows browser. Read the private operator token using `cat runtime/admin-token.txt`; paste it into **Commons** → **CONNECT OVERVIEW**. The Compose port is bound to localhost only. Use `bash scripts/commons-local.sh logs` to inspect logs and `bash scripts/stop-local.sh` to shut down. See [local browser test walkthrough](docs/LOCAL-TEST.md) for creating an approved Cat, enrolling a volunteer, starting Catnap and testing Pause/Revoke.
+The local-only setup binds port **8765 to 127.0.0.1** and enables guest self-enrollment for testing. The operator credential is generated at `runtime/admin-token.txt`; ordinary Catnap contributors never need it. Hosting a Commons does not grant it access to visiting machines' Docker daemons.
 
-The Docker service only coordinates participants; it does not magically supply client CPU/GPU resources. The local browser worker contributes bounded CPU SHA-256 computation only by explicit consent.
-
-## Catnap and Create a Cat: the browser experience (v0.4)
-
-**Catnap** means **contribute computing**. **Create a Cat** means **create/submit a computational project**. A **Cat** is that project/workload, and a **Catbox** is the execution sandbox for its computation. Cats do not represent worker machines. These names are intentional parts of the public API and UI.
-
-The coordinator now also serves a working browser app at **http://127.0.0.1:8765/** (when the coordinator is running). The **default Gibson scene** is a glowing blue WebGL 2 monolith city inspired by the supercomputer in the 1995 film *Hackers*. Its towers, intensity, associations and inspection panels are driven by **real consented nodes, leased tasks, independently verified completions and Chronicle events** once authenticated. The unauthenticated preview is synthetic, prominently labeled and never counted as work. Other bundled paradigms: **Flying Cats, Flying Toasters, 3D Pipes, Chronicle Terminal**. Users can export/import validated palette skins; developers can add entire reviewed scene plug-ins. Fullscreen browser visualization is **not** an installed operating-system screensaver.
-
-**Create a Cat** is an invitation-gated signed-project workshop. It signs the existing **bounded SHA-256 pilot** work locally with a Web Crypto Ed25519 key, then **stages** a proposal until an operator approves it. Contributor constitutions must independently trust the creator's signer key. OCI Catbox execution, arbitrary source uploads, GPUs/WebGPU computing, signed OCI artifact verification and actual household energy controls are still **not implemented**. Catnap's browser CPU worker runs the known builtin in a dedicated Web Worker; its CPU pacing is cooperative and cannot enforce hardware safety policies. The existing native Linux agent remains available.
-
-Read **[browser start and architecture](docs/CATNAP-BROWSER.md)** and **[skinnable screensaver/scene SDK](docs/SCENE-SDK.md)** for operator enrollment, five-browser workflow, optional developer theming and safety notes.
+To **permanently remove** your local Commons and its database volume, first revoke/remove any Catboxes that use it, then run:
 
 ```bash
-python -m pip install -e '.[test]'
-export POLYC_ADMIN_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(36))')"
-polyc serve --db runtime/browser.sqlite --host 127.0.0.1 --port 8765
-# Visit http://127.0.0.1:8765/ from a browser on this computer.
+bash scripts/remove-local.sh --purge-data
+# Requires the explicit confirmation: DELETE MY COMMONS
 ```
 
-The initial public preview does not require credentials. On a coordinator explicitly configured with `POLYC_SELF_ENROLL=1` (as in the loopback-only Compose demo), volunteers can register without invitations while explicitly selecting trusted approved Cat creators. **Create a Cat** proposals still require one-use operator invitations and review. The development server is intended for localhost and must not be exposed directly to the Internet.
+This erases **your local Commons database and administrator credential**, not the source tree or records held elsewhere. **Do not expose the sample Compose service directly to the public Internet.** Public hosting requires HTTPS, ingress and abuse controls, secret management, backups, and security review.
 
-## Meet the household
+## What works today (and what doesn't)
 
-> The household has adopted a constitution. The cats have requested individual amendments.
+The current pilot has a coordinator, an approved signed **SHA-256** task protocol, independently configured workers, consent checks, task receipts/Chronicle, browser Catnap, a local Docker Catbox, and a WebGL visualization (default **Gibson** scene). A five-worker demonstration runs on one Linux host; **five independent households have not yet been validated**. Create a Cat stages signed proposals for operator approval; its submission path is not unrestricted container execution.
 
-**HIRD — HIRD Isolated Resource Domain** is the name of the future disposable execution sandbox. For now, `HIRD/process` runs only one trusted bundled task with subprocess resource limits and Linux `nice +19`. `HIRD/Linux` (QEMU/KVM) is the next proposed backend; `HIRD/Hurd` is a capability-oriented research track, *not* a runtime dependency.
+**Not yet available:** arbitrary Cat/OCI execution, native GPU or WebGPU computation, guaranteed host thermal/power enforcement, unattended public Internet deployment, automatic verification of creators' stated project purposes, and real-money payments. A separate **noncash test-credit** prototype exists; its credits are not money or guaranteed compute. See the [roadmap](docs/ROADMAP.md) for planned work.
 
-**Nice Plus** refers to application-level priorities beyond Linux's `nice` range of -20 to +19. A worker process actually uses `nice +19`, plus a best-effort CPU duty cycle, host-side safety checks, and an immediate owner pause flag. None of those is a general solution to GPU preemption. The names are jokes; revocation isn't.
+## Further reading and development
 
-## Submitting a project: OCI image + PoliC constitution + ledger
+- **[Informed consent and full lifecycle](docs/CONSENT-AND-LIFECYCLE.md)** — complete permissions, security limits, pause/revoke/removal, troubleshooting.
+- **[Local acceptance walkthrough](docs/LOCAL-TEST.md)** — how to approve a test Cat and verify that a consenting visitor actually receives work.
+- **[Documentation index](docs/INDEX.md)** — browser protocol, project submissions, threat model, economics, architecture, scenes, and developer references.
+- **[Philosophy](Philosophy.md)** and **[licensing](LICENSING.md)** — developer freedom and contributor sovereignty are separate: freedom to build does not confer authority over another's machine.
 
-Proposed projects have **two separate, signed YAML declarations**:
-
-- `project.yaml`: a public source repository pinned to a Git commit, an OCI/Docker-built image **pinned by SHA-256 digest**, a bounded work-sharding protocol, and declared resource needs.
-- `polic.yaml`: the project's own constitution: purpose, prohibited uses, commercial terms, contributor eligibility, mutual revocation, output licensing and contribution/revenue distribution.
-
-A third artifact is generated as computation occurs: a **contribution ledger** consisting of per-project hash-linked receipts. The built-in CPU pilot now records *provisional* contribution points for independently verified tasks. Separate v0.3 test-credit issuance requires an explicit operator action, issuer supply limit and a constitutionally opted-in wallet; contribution points are not automatically transferable credit balances. An actual revenue-sharing agreement would need additional contractual, metering and settlement controls.
-
-**Staging-only OCI path (unchanged in v0.3):**
-
-```bash
-# project.yaml and polic.yaml are illustrated in projects/example-render/.
-polyc validate-submission --dir projects/example-render
-# Create a new Ed25519 key pair and put the public key in polic.yaml before signing.
-polyc keygen --private runtime/owner.pem --public runtime/owner.pub
-polyc sign-submission --dir projects/example-render --private runtime/owner.pem \
-  --out runtime/signed-submission.json
-# With an already-running, authenticated local coordinator:
-polyc submit-submission --signed runtime/signed-submission.json \
-  --server http://127.0.0.1:8765 --admin-token-file runtime/admin-token.txt
-```
-
-The supplied example has **fake artifact/source hashes and a fake signer key**—replace them before signing. The submission endpoint returns `staged`, explicitly **not executable**. No code is fetched, reviewed, attested, scanned, or launched yet. Do not introduce `docker run` on the host as a shortcut: HIRD/Linux VM isolation must come first.
-
-See [project submission specification](docs/project-submissions.md), [contribution ledger and royalties](docs/contribution-ledger.md), and [example petition](projects/example-render/). Project-side sovereignty and owner-side sovereignty must be mutually compatible. *The author can petition for a cat; no cat is obliged to take the part.*
-
-## Transferable credits: the saucer exchange (v0.3)
-
-**The economics pilot is runnable, but no money moves.** Owners and project creators hold separate Ed25519 wallet identities and declare mutually compatible, test-only credit rules. An asset has a named issuer, supply cap, and an explicit disclaimer: it is **unbacked, nonconvertible, nonmonetary, and grants no guaranteed compute**. Real royalties, bank transfers, PayPal/Zelle/Patreon/Stripe integration, cashouts and legal compliance systems are **not implemented**.
-
-```bash
-python -m pip install -e '.[test]'
-python -m polyc.economy_demo     # or: polyc economy-demo
-```
-
-This local demonstration uses five distinct contributor identities and one project wallet:
-
-1. **25 verified volunteer tasks** → 25 test credits explicitly issued (five to each cat).
-2. Each cat and the project owner **both sign** a one-credit transfer → project wallet receives five.
-3. The project owner signs a new credit-priced five-task job and **reserves five credits** as its budget; the scheduler refuses unfunded paid work.
-4. Five verified paid tasks → the coordinator **settles five credits to the five workers**. Supply remains 25 and the clearing journal balances.
-
-The implementation uses integer-only, double-entry SQLite postings, atomic transaction commits, owner-signed wallet enrollment, two-party Ed25519 transfer signatures, strictly increasing sender nonces, expiration windows, **ledger-specific signature domains**, and a locally hash-linked transaction history. Cancelling paid work settles already verified tasks and refunds the remainder. A malicious clearing operator can still rewrite a local journal; there is **no independent ledger consensus or external root anchoring**.
-
-`GET /api/finance/providers` lists a provider-neutral declaration catalogue including PayPal, Patreon, manual Zelle/bank transfers, Stripe Connect, and custom adapters; **none is connected**. Staged project `polic.yaml` now accepts signed, non-executable financial disclosures (revenue streams, receipts basis, reporting cadence, payout rails, dispute windows). It does not verify receipts or execute payouts.
-
-See **[economic architecture, API, wallet CLI and security limits](docs/economics.md)** and the [signed test-credit project example](projects/example-test-credit-job/). All five participants in the test are simulated on one Linux machine, *not* five real households.
-
-## Run the five-cat pilot
-
-Requirements: Linux, Python 3.10+, a local Python environment with network access for installation, and the dependencies in `pyproject.toml`. The coordinator binds to loopback by default.
+To run the project's automated checks (developer workflow, not required for Catnap):
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+. .venv/bin/activate
 python -m pip install -e '.[test]'
 pytest -q
-python -m polyc.demo --timeout 35
+node scripts/test-browser-protocol.mjs
+node scripts/test-browser-worker.mjs
 ```
 
-Expected outcome: `"done": 25`, five contributors named `cat-1` through `cat-5`, five completed tasks apiece. Real results are recomputed by the coordinator; no fabricated rendering or model inference is claimed. To retain private demo logs and SQLite records, use:
-
-```bash
-python -m polyc.demo --workdir runtime/five-cats --timeout 35
-```
-
-Each invocation creates its own run directory. **Keep `runtime/` private**: it contains node tokens and a project private signing key. The ephemeral one-command demo is the fastest test; the manual steps below describe separate owner processes.
-
-## Run the components independently
-
-The operator starts a star coordinator, creates Ed25519 project keys, and provisions five individually authorized owners. Each owner receives only their own `cat-N.yaml`, **never** the coordinator's admin token or the project private key.
-
-```bash
-polyc init-pilot --out runtime/my-first-household --nodes 5
-export POLYC_ADMIN_TOKEN="$(cat runtime/my-first-household/admin-token.txt)"
-polyc serve --db runtime/my-first-household/coordinator.sqlite --host 127.0.0.1 --port 8765
-```
-
-In another shell (the coordinator must already be running):
-
-```bash
-for n in 1 2 3 4 5; do
-  polyc register --config "runtime/my-first-household/nodes/cat-$n.yaml" \
-    --server http://127.0.0.1:8765 \
-    --admin-token-file runtime/my-first-household/admin-token.txt
-done
-polyc submit --signed runtime/my-first-household/signed-project.json \
-  --server http://127.0.0.1:8765 \
-  --admin-token-file runtime/my-first-household/admin-token.txt
-```
-
-Then run each of the five workers in its **own terminal or Linux machine** (five commands, replacing `N` with `1` through `5`):
-
-```bash
-polyc worker --config runtime/my-first-household/nodes/cat-N.yaml \
-  --server http://127.0.0.1:8765
-```
-
-This direct HTTP URL is valid only for local testing. **For five real homes, use an authenticated TLS proxy, private VPN, or SSH tunnels; never carry bearer tokens across an untrusted network over plaintext HTTP.** The pilot coordinator is not Internet-hardened. A non-loopback listener is refused unless an explicitly unsafe test flag is passed.
-
-### A node owner can always say no
-
-```bash
-polyc pause --config runtime/my-first-household/nodes/cat-1.yaml
-polyc chronicle --config runtime/my-first-household/nodes/cat-1.yaml
-polyc pause --config runtime/my-first-household/nodes/cat-1.yaml --resume
-```
-
-Pause is enforced by the **local worker** even if the coordinator is unreachable. Press `Ctrl-C` to stop the worker. The coordinator also supports node revocation and project cancellation over authenticated API endpoints. An owner may edit a constitution, but must explicitly re-register its digest before new leases: silently changing the policy is not consent.
-
-## The constitutional Cs
-
-**Thirteen Constitutional Cs** guide both sides of every agreement: those who offer computation and those who request it. The newer economic Cs extend the same mutual-sovereignty principles to credits, revenue, and settlement.
-
-| C | Obligation |
-|---|---|
-| **Consent** | Mutual opt-in, ongoing authorization, revocation |
-| **Control** | Local processes and the human owner take priority |
-| **Constitution** | Declare and version constraints in machine-readable form |
-| **Commons** | Open protocols, public-source aspirations, inspectable governance |
-| **Cooperation** | Independent participants make agreements, not submissions |
-| **Clarity** | Activity records, plain-language explanations, and inspectable evidence |
-| **Culpability** | Investigate responsibility using evidence, rather than assuming guilt from participation |
-| **Correction** | Revocation, appeals, reproducibility, repair, and auditable adjustments |
-| **Conservation** | Explicitly bound energy and heat claims to *measured* facts |
-| **Care** | Protect people, hardware, households, and habitats |
-| **Compensation** | Define fair, mutually accepted terms for rewards, rates, credit earnings, and revenue shares *before* work begins |
-| **Commerce** | Make value exchange, fees, payment methods, and settlement provider-independent, transparent, and reconcilable |
-| **Credibility** | Back each credit or financial claim with a named issuer, stated redemption terms, and independently checkable evidence |
-
-**Clarity before culpability.** Contributor identity, project intent, and culpability cannot be reliably inferred from source comments, a pseudonym, or a node's political labels. The pilot enforces *declared categories, purposes, allow/deny lists, and signed project assertions*—not automated moral certainty. Likewise, today's noncash test credits demonstrate bookkeeping, **not** guaranteed compute capacity or real-money settlement; Compensation, Commerce, and Credibility are commitments the eventual production exchange must fulfill.
-
-### Mutual constitutional matching
-
-A project declares category, purposes, commercial terms, contributor allow/deny lists, a public source URL and pinned revision, and a **signed** deterministic workload manifest. The node declares approved categories, disallowed purposes, project signer public keys, resource bounds, and revocation rules. The coordinator matches both; the independent node **checks again** before execution. The pilot does not retrieve or verify that the declared source repository truly corresponds to the bundled code—the only executable artifact is the built-in, pinned `sha256_chain_v1` handler.
-
-See [`constitution.example.yaml`](constitution.example.yaml) for the **future-oriented** constitution sketch, and [`polyc/demo.py`](polyc/demo.py) for the schema actually enforced in the CPU pilot. The older example includes unsupported GPU and energy limits and must **not** be submitted verbatim to the running CPU pilot. The pilot rejects `energy.require_meter: true` and nonzero `gpu_utilization_percent_max` rather than pretending they are enforced. CPU temperature constraints are fail-closed when requested and a suitable host sensor is missing; the portable demo sets this threshold to `null` and therefore **does not claim thermal protection**.
-
-## Architecture
-
-```text
-                         +-----------------------+
-                         | PolyC Coordinator     |
-                         | SQLite lease queue    |
-                         | signed project intake |
-                         | compatibility checks  |
-                         +------------+----------+
-                                      |
-             +------------------------+-----------------------+
-             |            |           |           |           |
-          [cat-1]      [cat-2]     [cat-3]     [cat-4]     [cat-5]
-           PoliC        PoliC       PoliC       PoliC       PoliC
-           PolyC        PolyC       PolyC       PolyC       PolyC
-         HIRD/process  HIRD/process  ...       ...         ...
-```
-
-Each node retains its own constitution, owner pause flag, and trusted project signers. The coordinator stores node token **hashes**, active task leases, result digests, a hash-linked provisional contribution ledger, and an event log in SQLite. Ed25519 signs project declarations. An authenticated worker reports a result; the coordinator independently recomputes the deterministic answer before recording completion. This establishes the correctness of this *toy task*, **not** general-purpose verifiable computation. Tokens are not transferable trust certifications, and coordinator logs are not cryptographically immutable.
-
-- **PoliC negotiator:** `polyc/policy.py` and `polyc/crypto.py`.
-- **PolyC coordinator and exchange:** `polyc/api.py`, `polyc/store.py`.
-- **Test-only credit clearing:** `polyc/credits.py` (wallets, issuance, signed transfers, reservations, payouts in test units); `polyc/economy_demo.py` (five-owner acceptance run).
-- **Provider-neutral financial declarations:** `polyc/submission.py`, `polyc/payment_adapters.py`. No real payments or payment SDKs.
-- **PolyC Daemon:** `polyc/worker.py` monitors consent, project cancellation, host activity, and owner pause.
-- **HIRD/process:** `polyc/hird.py`, `polyc/task_child.py` limit runtime, address space, and CPU priority for a bundled task only.
-- **Chronicle:** `polyc/chronicle.py`, `polyc chronicle`, authenticated `/api/chronicle/{node_id}`.
-- **Monitor:** authenticated `/metrics` endpoint for Prometheus; Grafana and Nagios remain integrations to build.
-- **Catnap + Create a Cat browser:** `polyc/browser.py` and `polyc/web/`; live privacy-scoped WebGL Gibson/other scenes, consented Web Crypto CPU worker, signed proposal workshop. Preview events are labeled synthetic; no WebGPU compute or native OS screensaver installation.
-
-More detail: [HIRD architecture](docs/hird-architecture.md), [threat model](docs/threat-model.md), [milestones](docs/ROADMAP.md), [five-node acceptance](docs/pilot-acceptance.md).
-
-## What works, and what does not
-
-| Capability | State |
-|---|---|
-| Five independently configured agents, one host | **Tested** |
-| Browser Catnap + Web Crypto deterministic CPU worker | **Implemented; unrestricted browser/hardware acceptance still pending** |
-| Default WebGL 2 Gibson plus 4 more scenes and importable JSON skins | **Implemented source; graphics/browser hardware acceptance pending** |
-| Create a Cat workshop with Ed25519 signatures, review and explicit contributor trust | **Implemented; approved built-in CPU tasks only** |
-| REST coordinator with durable queue and lease expiry | **Implemented** |
-| Ed25519 project signatures and trusted signer allowlist | **Implemented** |
-| Mutual declared-constitution matching | **Implemented** |
-| Owner local pause, fail-closed on coordinator loss | **Implemented** |
-| Best-effort CPU duty and Linux `nice +19` | **Implemented** |
-| CPU package threshold if sensor available | **Conditional; fail-closed when requested** |
-| Deterministic result verification and Chronicle records | **Implemented** |
-| Five separate Linux hosts over encrypted transport | **Instructions; not yet validated** |
-| HIRD/Linux QEMU/KVM VM isolation | **Not yet implemented** |
-| GNU Hurd HIRD guest research | **Planned** |
-| GPU scheduling, thermal VRAM limits, energy metering | **Not yet implemented** |
-| OCI/PoliC manifest validation, signatures, staging-only intake | **Implemented; NOT executable** |
-| Project contribution receipts and provisional points | **Implemented for built-in CPU tasks only** |
-| Test-only issuer, 2-signature credit transfers, reservations, settlement | **Implemented; 5-owner pilot demo, noncash only** |
-| Signed project financial disclosures and provider adapter catalogue | **Staged metadata only; no provider integration** |
-| Arbitrary OCI execution, distributed ML, monetary payouts, public exchange, blockchain | **Not yet implemented** |
-
-This is a **research prototype**; do not run it with untrusted workloads or expose the API publicly. Running untrusted code inside an ordinary subprocess would not respect the architecture's security requirements. Physical and network tests on actual contributing households will be a separate milestone.
-
-## The Thurber principle: cats, not cattle
-
-James Thurber's dry domestic absurdity is an influence, just as Monty Python supplied some of Python's cultural vocabulary. The project should honor the humor while writing **original** captions and illustrations. Do not reproduce a specific Thurber picture, caption, or *New Yorker* page without confirming the particular artwork's rights status; material collected in *The Thurber Carnival* may have different original publication dates. See [art and rights](docs/art-and-rights.md).
-
-> A HIRD is not a herd. The distinction is most apparent at feeding time.
-
-> The guest was given a room, not the keys to the house.
-
-The first line is a joke. The second is a security goal. For the current process pilot, the guest has not yet been given a reliably locked room. That is precisely why we don't invite strangers' code inside.
-
-The cats are free to disagree. The logs are expected to be accurate.
-
-### Replicate from the web UI
-
-The landing page links to a downloadable, versioned-at-build source snapshot ZIP and an in-browser self-hosting guide. Regenerate the published snapshot with `python scripts/build-source-snapshot.py` after editing the repository; never put secrets or runtime data in the source tree. This is a source archive, **not** Git history. The landing page also prominently distinguishes the supported browser CPU SHA-256 work from unavailable native GPU/Catbox and hardware safeguards.
-
-
-### Personal PoliC editor (local UI testing)
-
-**Preview My PoliC** and **Export PoliC JSON** are safe draft-only actions. Neither requires an invitation or trusted creator key, and neither contributes compute. A draft with an empty trust list **is** enrollable but cannot receive work. **Enroll in Catnap** requires explicit resource-safety acknowledgement, but no invitation on this local pilot. Visitors select trusted creator keys from the approved Cat list rather than manually copying hexadecimal keys. Action errors and confirmations appear next to their buttons; **Start Catnap** remains a separate choice after enrollment. During local testing JavaScript and CSS are served without browser caching to avoid stale deployments.
-
-
-### Invitation-free guest Catnap (local pilot)
-
-The `compose.yaml` example explicitly enables `POLYC_SELF_ENROLL=1` on the loopback-only local testing service. Visiting `/` now shows **approved browser-compatible Cats** with explicit, initially unchecked creator-trust choices. A guest can preview/export their PoliC, acknowledge real heat/electricity and unenforced limits, and enroll **without** an operator-issued invite or copying raw creator keys. **Enrollment is not execution:** they must press **Start Catnap** separately. They may also enroll trusting no creators; that node stays idle and cannot receive jobs. On revoke, they may re-enroll with a new browser ID. The operator still exclusively approves executable Cats, and Create a Cat still requires a one-use project invitation.
-
-For self-hosting outside the supplied local Compose file, the default is `POLYC_SELF_ENROLL=0`, preserving invitation-only registration unless the coordinator owner explicitly opts in. The local pilot adds persistent per-connection limits; **do not expose the test container directly to the Internet**. See `docs/CATNAP-BROWSER.md`, `docs/LOCAL-TEST.md`, and `docs/threat-model.md`.
+**Software and protocols:** [BSD 3-Clause](LICENSE), including the freedom to keep your improvements private. **Original documentation:** [CC BY 4.0](docs/LICENSE-CC-BY-4.0.md). Independent illustrations, submitted Cats, and their outputs have separately specified rights; see [LICENSING.md](LICENSING.md).
