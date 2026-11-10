@@ -1,0 +1,24 @@
+{
+  "files": {
+    ".gitignore": "183a2d6b1fb04a89c07f5e0efde32c0f0982f44bb0eab718434ee6fa302553b6",
+    "README.md": "d5a7a2f5dc202ac5ec68abafa5e7644e801c844785b2437aad30048cf4f8aa7e",
+    "pyproject.toml": "d7fcdfe9b26730f2821605ab0dc9204f87143c59697327946ca00c6aeaa762e6",
+    "docs/BRANCHING-HOME.md": "d85409e3a6b7f4a501140b26c17ff3eed2e37b041e029d20da097a8495ca2c1d",
+    "docs/FEATURED-CATS.md": "2480fc2b58262215227c57480f164d88246be74123f4547171366c9ca1309897",
+    "docs/GETTING-STARTED.md": "7cadac4b0322f52da521f76955c52c6368dfbfb3e1f8c68d548f4f83142e6198",
+    "docs/IDENTITY-SOVEREIGNTY.md": "394e78e0db21842ee41269a93f99121a027835f8e835098db13bd99a8c8f11a4",
+    "docs/INDEX.md": "2dec2a57dd447a417b8f68a592a94ba2aa1b477cb76db66f3c471742305a8cf7",
+    "docs/ROADMAP.md": "ac55168f478e51c5779a9eaee84ea12d429cd227dc63099a8ebe6a2697d5d020",
+    "docs/TEST-RESULTS.md": "9d9c8f5e77636e7f1514e1f27a47e6d732d6da69521d6668ee3c2df072e6501f",
+    "docs/LOCAL-OPERATOR-RUNBOOK.md": null,
+    "docs/RELEASE-CHECKLIST.md": null,
+    "scripts/build-source-snapshot.py": "0e91ba18e00abe47fd01ece7fbfc2dd057b8b9c62627fa06a1f7016672501393",
+    "scripts/verify-release-assets.py": null,
+    "tests/test_release_documentation.py": null
+  },
+  "required": [
+    "polyc/identity.py",
+    "polyc/web/branching-story.mjs",
+    "polyc/web/featured-cats.json"
+  ]
+}

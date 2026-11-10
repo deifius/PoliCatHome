@@ -1,0 +1,28 @@
+/* Pseudonymous identity is optional: intentionally no extra first-screen card. */
+.identity-dialog{border:1px solid #6f8f7a;border-radius:22px;background:#111a17;color:#e9f5eb;
+  padding:23px;max-width:min(480px,calc(100vw - 30px));width:100%;box-sizing:border-box;
+  box-shadow:0 30px 80px #000c;font:15px/1.5 ui-sans-serif,system-ui,sans-serif}
+.identity-dialog::backdrop{background:#030806d8;backdrop-filter:blur(5px)}
+.identity-dialog .identity-head{display:flex;justify-content:space-between;align-items:center;color:#a8eea4}
+.identity-dialog h2{margin:3px 0 16px;font-size:clamp(23px,4vw,30px);letter-spacing:-.04em;color:#f0f4ee}
+.identity-dialog .identity-options{display:grid;gap:10px}
+.identity-dialog .identity-option{display:block;width:100%;border:1px solid #4b6655;border-radius:12px;
+  background:#1a2920;color:#eaf7ee;text-align:left;padding:13px 16px;cursor:pointer;font:600 14px ui-sans-serif,system-ui,sans-serif}
+.identity-dialog .identity-option:hover{background:#294332;border-color:#a8eea4}
+.identity-dialog .identity-option:focus-visible{outline:2px solid #a8eea4;outline-offset:3px}
+.identity-dialog .identity-option.identity-primary{background:#a8eea4;color:#102318}
+.identity-dialog .identity-close{border:0;background:none;color:#dcefe3;font-size:28px;cursor:pointer}
+.identity-dialog .identity-note{margin:0 0 5px;color:#bbcbbf;font-size:13px}
+.identity-dialog .identity-alias{margin:0;word-break:break-word;font:600 13px ui-monospace,monospace;color:#a8eea4}
+.identity-dialog .identity-notice{min-height:1.4em;color:#a8eea4;font-size:12px}
+.identity-dialog .identity-notice[data-error="true"]{color:#ffbb9c}
+.identity-nav{border:1px solid #437354!important;background:#182a20!important;color:#baf3c0!important;border-radius:9px;cursor:pointer;padding:9px 13px!important}
+.branching-foot .identity-option{border:0;background:none;color:#a8eea4;font:inherit;padding:9px 4px;cursor:pointer}
+.branching-foot .identity-option:hover{text-decoration:underline}
+@media(max-height:580px){.identity-dialog{max-height:90dvh;overflow-y:auto}}
+@media(prefers-reduced-motion:reduce){.identity-dialog::backdrop{backdrop-filter:none}}
+
+.identity-dialog .identity-label{display:grid;gap:5px;color:#cde0d0;font-size:12px}
+.identity-dialog .identity-label input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #5d7660;border-radius:10px;background:#0d1712;color:#f0f4ee;font:14px ui-sans-serif,system-ui,sans-serif}
+.identity-dialog .identity-label input:focus-visible{outline:2px solid #a8eea4;outline-offset:2px}
+.identity-dialog .identity-warning{border-left:2px solid #f0c18a;padding-left:10px;color:#e8d9c1}

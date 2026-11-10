@@ -6,6 +6,8 @@
 
 PoliC@home is an experimental, open-source network for voluntarily sharing computing power. It is inspired by distributed projects such as SETI@home and by the idea that each participating machine should remain under its owner's control.
 
+**Release state (November 2026):** Bloom v4 (one-question exploration), the versioned Featured Cats editorial registry, and Identity I1 (optional pseudonym/key login and configured Google OIDC) are implemented in the pilot. Browser and native Catnap still execute only approved, bounded SHA-256 tasks. **No login authorizes compute.** For a new visitor start with the [short getting-started guide](docs/GETTING-STARTED.md); for an existing deployment use the [operator runbook](docs/LOCAL-OPERATOR-RUNBOOK.md).
+
 **PoliC** (*Candid Constitutional Consent*) says *what work may run, for whom, and under what limits*. **PolyC** (*Coordinated Computational Care*) matches consenting participants with approved work and records what happened. You can contribute without administering a server.
 
 ## Choose your way to participate
@@ -138,6 +140,18 @@ python -m pip install -e '.[test]'
 pytest -q
 node scripts/test-browser-protocol.mjs
 node scripts/test-browser-worker.mjs
+node scripts/test-featured-cats.mjs
+node scripts/test-branching-home.mjs
+node scripts/test-branching-story.mjs
+node scripts/test-identity-ui.mjs
 ```
 
+Before merging or publishing a source snapshot, follow the [release checklist](docs/RELEASE-CHECKLIST.md). It checks wheel inclusion of the `.json` and `.mjs` Bloom assets as well as the downloadable source ZIP, secrets, tests, and rollback.
+
 **Software and protocols:** [BSD 3-Clause](LICENSE), including the freedom to keep your improvements private. **Original documentation:** [CC BY 4.0](docs/LICENSE-CC-BY-4.0.md). Independent illustrations, submitted Cats, and their outputs have separately specified rights; see [LICENSING.md](LICENSING.md).
+
+## Identity without captivity (PURDAH direction)
+
+PoliC@home now has an **optional first-party pseudonymous identity** for returning visitors: a browser-held Ed25519 proof-of-control key, server-managed session, and account-level Bloom bypass. A separately configured Google OpenID Connect login can be linked or unlinked; Google email is never the account key. **Signing in cannot enroll, authorize or start Catnap and does not grant creator or operator rights.**
+
+This is an **initial milestone toward**, not an implementation of, the PURDAH identity vision in Stephenson's *Fall; or, Dodge in Hell*. Keys cannot yet be recovered across devices; passkeys, portable author claims and cross-Commons recovery are future milestones. Read [Identity without captivity](docs/IDENTITY-SOVEREIGNTY.md) before enabling public sign-in.

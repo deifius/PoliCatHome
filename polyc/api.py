@@ -222,6 +222,8 @@ def create_app(db_path: str, admin_token: str) -> FastAPI:
             f'polyc_tasks{{state="{key[6:]}"}} {value}\n' for key, value in sorted(m.items()) if key.startswith('tasks_')
         )
 
+    from .identity import mount_identity
+    mount_identity(app, store, admin_token)
     from .browser import mount_browser
     mount_browser(app, store, admin_token, admin, bearer)
     return app

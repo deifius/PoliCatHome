@@ -8,8 +8,50 @@
   <title>PoliC@home · Your compute, your consent</title>
   <link rel="stylesheet" href="/web/style.css">
   <script type="module" src="/web/app.js"></script>
+  <link rel="stylesheet" href="/web/featured-cats.css">
+  <script type="module" src="/web/featured-cats.js"></script>
+  <link rel="stylesheet" href="/web/branching-home.css">
+  <script type="module" src="/web/branching-home.js"></script>
+  <link rel="stylesheet" href="/web/identity-ui.css">
 </head>
 <body>
+<!-- The minimal invitation is presentation only; consent and computation remain in the existing app. -->
+<section id="branchingHome" class="branching-home" hidden aria-label="Explore PoliC@home">
+  <header class="branching-top">
+    <a class="branching-brand" href="/" aria-label="PoliC at Home, beginning">Poli<span>C</span><small>@home</small></a>
+    <span class="branching-topnote">a computing commons</span>
+  </header>
+  <main id="branchingStage" class="branching-stage" aria-labelledby="branchingTitle">
+    <div class="branching-cat" aria-hidden="true">
+      <svg viewBox="0 0 220 144" role="presentation" focusable="false">
+        <g class="branching-cat-drawing" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M64 72 Q43 63 52 42 L47 22 Q63 29 75 43 Q102 28 135 42 L157 24 L154 56 Q171 81 151 101 Q134 120 105 116 Q74 117 61 99"/>
+          <path d="M62 92 Q44 115 35 101 Q22 85 10 99 Q-1 115 24 126 Q48 134 67 111"/>
+          <path d="M82 72 Q87 66 91 74 M122 74 Q127 67 132 73"/>
+          <path d="M107 87 l-5 4 7 2 M109 93 Q104 102 99 97 M109 93 Q114 102 118 97"/>
+          <path d="M85 90 L59 85 M84 97 L57 101 M130 90 L157 85 M129 97 L158 103"/>
+          <path d="M77 115 L72 129 M126 115 L133 129"/>
+        </g>
+        <circle class="branching-orbit" cx="177" cy="34" r="3" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="branching-content" id="branchingContent">
+      <p class="branching-kicker" id="branchingKicker"></p>
+      <h1 id="branchingTitle" tabindex="-1"></h1>
+      <p id="branchingDescription" class="branching-description"></p>
+      <p id="branchingStatus" class="branching-status" hidden></p>
+      <div id="branchingChoices" class="branching-choices" aria-label="Your choices"></div>
+      <div id="branchingExtra" class="branching-extra"></div>
+    </div>
+  </main>
+  <footer class="branching-foot">
+    <button id="branchingHomeButton" class="branching-home-link" type="button" hidden>← Start over</button>
+    <span>Looking never starts Catnap.</span>
+    <a href="/web/participate.html">How it works</a>
+  </footer>
+</section>
+<!-- End minimal invitation. -->
+
 <a class="skip-link" href="#contribute">Skip to Catnap choices</a>
 <div class="app-shell">
   <header class="masthead">
@@ -27,10 +69,12 @@
       <div class="visitor-hero">
         <div class="hero-copy">
           <div class="eyebrow">VOLUNTARY COMPUTING · YOUR CHOICE</div>
-          <h1>Contribute your Compute, <em>Cultivate the Commons.</em></h1>
-          <p class="intro">Help with computing projects you choose, under rules you set. Your personal <strong>PoliC</strong> is your permission slip—not the Commons' permission to take over your computer.</p>
+          <h1>Your computer. Your rules. <em>Our common future.</em></h1>
+          <p class="hero-tagline">Contribute your Compute, Cultivate the Commons.</p>
+          <p class="intro">Discover projects that could benefit from shared computing power. Choose what you believe in and what you're comfortable offering. Your <strong>PoliC</strong> is your permission slip, never a surrender of your machine.</p>
           <div class="hero-actions">
-            <a class="hero-primary" href="#contribute">Set up browser Catnap <span aria-hidden="true">→</span></a>
+            <a class="hero-primary" href="#featured-cats">Meet the Cats <span aria-hidden="true">→</span></a>
+            <a class="hero-secondary" href="#contribute">Set up browser Catnap</a>
             <a class="hero-secondary" href="#before-you-decide">Understand before I consent</a>
           </div>
           <div class="no-autostart"><span aria-hidden="true">◉</span> Visiting, browsing and previewing <strong>never start Catnap.</strong></div>
@@ -38,6 +82,25 @@
 
       </div>
 
+      <!-- FEATURED CATS GALLERY: discovery only; never authorizes execution -->
+      <section id="featured-cats" class="featured-cats" aria-labelledby="featured-cats-title">
+        <div class="featured-cats-head">
+          <div>
+            <div class="eyebrow">DISCOVER FIRST · CONSENT LATER</div>
+            <h2 id="featured-cats-title">Meet the Cats</h2>
+            <p>Explore potential work before committing your computer. A Cat is a project; a Catbox is the sandbox that might run it. Some examples are ideas, not available workloads.</p>
+          </div>
+          <div class="featured-cats-filters" role="group" aria-label="Filter featured Cats">
+            <button type="button" data-featured-filter="all" aria-pressed="true">All Cats</button>
+            <button type="button" data-featured-filter="pilot" aria-pressed="false">Pilot</button>
+            <button type="button" data-featured-filter="concept" aria-pressed="false">Concepts</button>
+          </div>
+        </div>
+        <p id="featuredCatsStatus" class="featured-cats-status" role="status" aria-live="polite">Loading the featured collection…</p>
+        <div id="featuredCatsGrid" class="featured-cats-grid" aria-label="Featured Cats"></div>
+        <p class="featured-cats-disclaimer">Featured means editorially selected, not approved to run or trusted by you. Actual eligible work is determined separately by Commons approval, creator trust, and your PoliC. Today's browser pilot runs only approved, matching SHA-256 tasks.</p>
+      </section>
+      <!-- END FEATURED CATS GALLERY -->
       <section id="before-you-decide" class="preflight" aria-labelledby="before-title">
         <div class="preflight-head"><div><div class="eyebrow">BEFORE YOU CONSENT</div><h2 id="before-title">Catnap in three steps.</h2></div><span class="preflight-state">Browser Catnap · no installation</span></div>
         <div class="truth-grid" role="tablist" aria-label="Three things to understand about Catnap">
