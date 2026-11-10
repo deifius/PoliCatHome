@@ -14,3 +14,7 @@ venv/
 runtime/
 output/
 .DS_Store
+# Local build, verification and Windows download artifacts
+build/
+dist/
+*:Zone.Identifier

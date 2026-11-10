@@ -1,0 +1,20 @@
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.db
+*.db-*
+*.sqlite*
+*.pem
+*.key
+*.log
+runtime/
+output/
+.DS_Store
+# Local build, verification and Windows download artifacts
+build/
+dist/
+*:Zone.Identifier

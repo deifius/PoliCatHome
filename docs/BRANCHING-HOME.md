@@ -2,7 +2,7 @@
 
 The first page intentionally behaves more like Google.com or a short choose-your-own-adventure than like a dashboard. It asks **one question at a time**, gives three choices, and uses a small, editable inline-SVG spline cat. The unmodified operational app remains accessible by intent, by deep link, and to already enrolled Catnap contributors.
 
-## Install after Featured Cats v2
+## Historical installation: after Featured Cats v2
 
 ```bash
 python3 scripts/activate-featured-cats.py --check
@@ -16,7 +16,7 @@ The installer is deliberately idempotent. It inserts markup at `<body>` and CSS/
 
 ## Interaction and content architecture
 
-- **Arrival:** `What brings you here?` → `Explore Cats`, `Offer compute`, or `Create a Cat`. This page fills the viewport on ordinary desktop and mobile sizes; no masthead navigation, grid or consent form is visible.
+- **Arrival (v4):** `What brings you here?` → `Meet the Cats`, `Offer my computer`, or `Propose a project`. This page fills the viewport on ordinary desktop and mobile sizes; no masthead navigation, grid or consent form is visible.
 - **Explore:** load `featured-cats.json` only after this choice; display one Cat at a time with a single sentence and a truthful `Pilot example`/`Concept only` status. `What would I do?` presents the next layer of explanation. `Next Cat` cycles the curated collection. Only the detail layer presents a source-repository link if it exists.
 - **Offer:** a short ownership statement → optional one-screen consent explanation → explicit `Set my PoliC` opens the preexisting Catnap form. No trusted keys are selected, no consent box is checked, and no enrollment occurs.
 - **Create:** a short introduction → `Open the workshop` opens the existing invited Create a Cat panel.
@@ -43,7 +43,8 @@ If JavaScript fails, the original app still renders, because the branching invit
 2. `Explore Cats`: cycle 3 entries and check that the two concept Cats say **not available**. Inspect the repository link only in the pilot detail view.
 3. `Offer compute` → `How is consent protected?` → `Set my PoliC`. Ensure the full form still appears and no CPU work began.
 4. `Create a Cat` → `Open the workshop`. Verify original creator inputs still work; no arbitrary Catbox execution is implied.
-5. Test browser hash `/#contribute`, previously enrolled browser session, keyboard Tab/Enter, reduced-motion, 200% text zoom and a blocked/unavailable JSON registry.
+5. Test browser hash `/\#contribute`, previously enrolled browser session, keyboard Tab/Enter, reduced-motion, 200% text zoom and a blocked/unavailable JSON registry.
+
 
 ## Bloom v4: conversational wit and remembering this browser
 
@@ -71,10 +72,30 @@ continues and the preference simply cannot persist.
 
 Do not silently enroll someone because they skipped the introduction. Do not
 introduce Google authentication merely to control this cosmetic preference.
-If account identity later becomes valuable, use optional OIDC with verified
-server sessions and keep project-specific PoliC consent separate. A federated
-identity must never be treated as a creator signer key or a Catnap authorization.
+Identity I1 now implements optional first-party pseudonymous sessions and, when
+configured, Google OIDC. This replaces the earlier purely hypothetical plan;
+account authentication is still not a creator signer key or Catnap authorization.
 
 Run `node scripts/test-branching-home.mjs` to validate the narrative graph,
 interaction boundaries and preference controls. No new HTML activation is needed
 when upgrading from v3: the v4 entry point reuses the existing Bloom markup.
+
+## I1 — Returning with an independent identity
+
+A small Bloom footer action, **Have an identity? Sign in**, opens the opt-in
+first-party identity dialog. A valid identity session with the `workspace` preference
+opens the detailed application without Bloom; a user can switch their account preference
+back to `bloom`. Anonymous and local browser-preference entry points still work.
+No credential or Google SDK is loaded merely because someone sees Bloom. Identity never
+causes Catnap enrollment, approval, creator trust, or compute start. See
+[Identity sovereignty](IDENTITY-SOVEREIGNTY.md) for implementation, known limitations
+and recovery milestones.
+
+## Relationship to the Featured Cats registry
+
+Bloom selects one entry at a time from the editorial `featured-cats.json`.
+The longer grid in the detailed workspace and Bloom's single-entry view use
+the same explanatory source. **Neither is the approved execution catalog.**
+That lives at `/api/catnap/catalog` and remains subject to operator approval,
+contributor creator-key trust, resource policy, separate enrollment and Start.
+See [Featured Cats](FEATURED-CATS.md) for curation rules.

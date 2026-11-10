@@ -1,6 +1,8 @@
-# Validation record — CPU pilot, test-credit exchange and v0.4 browser extension
+# Validation record — historical pilot evidence and current branch tests
 
-Verified locally on Linux / Python 3.13 with available dependencies at preparation time.
+**Historical evidence** below reflects earlier prototype checkpoints and is preserved as a record, not a current CI count. For the current branch, run the actual commands in [Release checklist](RELEASE-CHECKLIST.md). Do not infer a passing deployment or security review from a historical test count.
+
+Earlier verified locally on Linux / Python 3.13 with dependencies available at the time.
 
 - `pytest -q`: **40 passed** (current local run, including economic tests).
 - `python -m polyc.demo --timeout 35`: **25 / 25** deterministic tasks complete with five distinct contributors.
@@ -48,3 +50,16 @@ the authoring environment. **Docker was not installed in that environment, so
 full Docker Compose build, container startup, cgroup behavior, and cross-host
 networking are NOT yet verified.** Conduct the acceptance procedure in
 `docs/CONSENT-AND-LIFECYCLE.md` on the owner's machine before real-world use.
+
+## Bloom v4 + Identity I1 branch verification (November 10, 2026)
+
+In the pre-merge source audit, `python3 -m pytest -q` completed with
+**77 passed** (including two new release/documentation contract tests); the `test-identity-ui.mjs`, `test-branching-home.mjs` and
+`test-featured-cats.mjs` suites passed as well. These are local test results,
+not evidence of a live Google authentication exchange or unrestricted
+physical five-household participation.
+
+A package audit found that earlier `pyproject.toml` wheel rules omitted
+`.json`/`.mjs` assets and the source snapshot builder omitted `.mjs`.
+The release gate now inspects both built artifacts. See
+[Release checklist](RELEASE-CHECKLIST.md) and record new results in the PR.

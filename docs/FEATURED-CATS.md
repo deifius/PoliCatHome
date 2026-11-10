@@ -12,6 +12,8 @@ node scripts/test-featured-cats.mjs
 
 It is idempotent, keeps unfamiliar hero copy intact, and never touches consent-related Javascript or API code. Commit the resulting `polyc/web/index.html` change along with the new files. If your page no longer includes `before-you-decide`, inspect the HTML and adjust the integration instead of forcing a patch.
 
+The detailed workspace's **Meet the Cats** gallery and Bloom's one-at-a-time project story read the same registry. Bloom displays one project per decision, not a card grid; signing in or choosing the workspace preference may bypass Bloom, but does not change the registry or Catnap authorization.
+
 The homepage's **Meet the Cats** gallery reads `polyc/web/featured-cats.json` from the same origin (`/web/featured-cats.json`). This is a **curated presentation file**, not an execution catalog. It works before login, invites, enrollment, or a Catnap session. Its purpose is to explain what people might choose to support before asking them to configure consent.
 
 ## Add a featured Cat

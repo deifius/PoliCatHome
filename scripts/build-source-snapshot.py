@@ -6,7 +6,7 @@ root = Path(__file__).resolve().parents[1]
 target = root / 'polyc/web/downloads/PoliCatHome-source.zip'
 target.parent.mkdir(parents=True, exist_ok=True)
 exclude_dirs = {'.git', '.venv', 'venv', '__pycache__', '.pytest_cache', '.mypy_cache', 'node_modules', 'runtime', '.tox', 'dist', 'build'}
-allowed = {'.py', '.js', '.html', '.css', '.md', '.toml', '.yaml', '.yml', '.json', '.sh', '.txt', '.gitignore'}
+allowed = {'.py', '.js', '.mjs', '.html', '.css', '.md', '.toml', '.yaml', '.yml', '.json', '.sh', '.txt', '.gitignore'}
 with ZipFile(target, 'w', ZIP_DEFLATED, compresslevel=9) as archive:
     for f in sorted(root.rglob('*')):
         rel = f.relative_to(root)

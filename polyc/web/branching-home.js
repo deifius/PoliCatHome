@@ -4,6 +4,7 @@
  */
 import { validateFeaturedCatalog } from './featured-cats.js';
 import { BLOOM_STAGES, storyFor } from './branching-story.mjs';
+import { identityMe, installIdentityUI } from './identity-ui.js';
 
 const $ = id => document.getElementById(id);
 const home = $('branchingHome');
@@ -161,17 +162,21 @@ function hasEnrolledSession() {
     return Boolean(saved?.node_id && saved?.token);
   } catch { return false; }
 }
-function shouldShowHome() {
+function shouldShowHome(identity) {
   // Deep links and enrolled sessions take priority over cosmetic preferences so
   // users can always reach operational pause/revoke controls immediately.
   try {
     if (location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)))) return false;
   } catch { /* A malformed hash should not break the public invitation. */ }
-  return !hasEnrolledSession() && !preferredWorkspace();
+  if (hasEnrolledSession()) return false;
+  if (identity?.authenticated) return identity.identity?.default_landing === 'bloom';
+  return !preferredWorkspace();
 }
-function init() {
+async function init() {
+  const identity = await identityMe();
   installPreferenceControls();
-  if (!home || !shouldShowHome()) return;
+  installIdentityUI();
+  if (!home || !shouldShowHome(identity)) return;
   home.hidden = false;
   document.documentElement.classList.add('branching-active');
   home.addEventListener('click', event => {
