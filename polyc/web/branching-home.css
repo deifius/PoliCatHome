@@ -1,0 +1,93 @@
+/* First impression: one screen, one question, one choice at a time.
+   The existing consent/creator app stays intact behind this optional invitation. */
+.branching-home[hidden]{display:none!important}
+html.branching-active,html.branching-active body{height:100%;overflow:hidden}
+html.branching-active .app-shell,html.branching-active .skip-link{display:none!important}
+html.branching-active .branching-home{display:grid}
+.branching-home{
+  --bloom-bg:#111514;--bloom-ink:#f0f4ee;--bloom-faint:#a0aaa2;--bloom-line:#48544b;--bloom-pop:#a8eea4;
+  position:fixed;inset:0;z-index:100;grid-template-rows:auto minmax(0,1fr) auto;
+  box-sizing:border-box;width:100%;height:100dvh;min-height:0;overflow:hidden;
+  padding:clamp(16px,3.7vw,48px);background:var(--bloom-bg);color:var(--bloom-ink);
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;
+}
+.branching-home button,.branching-home a{font:inherit}
+.branching-home button:focus-visible,.branching-home a:focus-visible{outline:2px solid var(--bloom-pop);outline-offset:5px}
+/* The programmatically focused announcement heading is not an interactive control. */
+.branching-home h1:focus-visible{outline:0}
+.branching-top,.branching-foot{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0}
+.branching-brand{color:var(--bloom-ink);text-decoration:none;font:700 clamp(18px,2.4vw,24px) ui-monospace,Consolas,monospace;letter-spacing:-.09em}
+.branching-brand span{color:var(--bloom-pop)}
+.branching-brand small{font-size:.58em;letter-spacing:-.05em;margin-left:2px;color:var(--bloom-faint)}
+.branching-topnote{font:500 11px ui-monospace,Consolas,monospace;letter-spacing:.05em;color:var(--bloom-faint)}
+.branching-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;width:100%;text-align:center;gap:clamp(0px,1vh,10px)}
+.branching-cat{width:clamp(128px,19vw,220px);height:clamp(96px,17vh,145px);margin-bottom:5px;color:var(--bloom-pop);flex-shrink:1}
+.branching-cat svg{width:100%;height:100%;overflow:visible}
+.branching-cat-drawing{transform-origin:48% 60%;animation:branching-cat-curiosity 5s ease-in-out infinite}
+.branching-orbit{animation:branching-orbit 3.6s ease-in-out infinite}
+.branching-content{display:flex;flex-direction:column;align-items:center;max-width:690px;width:100%;min-height:0}
+.branching-content.blooming{animation:branching-bloom .26s cubic-bezier(.2,.7,.2,1)}
+.branching-kicker{margin:0 0 14px;color:var(--bloom-faint);font:500 11px ui-monospace,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase}
+.branching-home h1{max-width:650px;margin:0;color:var(--bloom-ink);font-size:clamp(31px,5vw,58px);line-height:1.1;letter-spacing:-.05em;font-weight:620}
+.branching-description{max-width:550px;margin:17px 0 0;font-size:clamp(14px,1.35vw,17px);line-height:1.5;color:var(--bloom-faint)}
+.branching-status{margin:14px 0 0;color:var(--bloom-pop);font:500 12px/1.4 ui-monospace,Consolas,monospace}
+.branching-choices{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:11px;margin-top:30px;max-width:680px}
+.branching-choice{border:1px solid var(--bloom-line);background:transparent;border-radius:999px;padding:12px 21px;min-height:47px;color:var(--bloom-ink);font-size:14px;font-weight:620;line-height:1.15;transition:background .16s,border-color .16s,transform .16s}
+.branching-choice:hover{border-color:var(--bloom-pop);background:#233127;transform:translateY(-2px)}
+.branching-choice.is-primary{border-color:var(--bloom-pop);background:var(--bloom-pop);color:#122019}
+.branching-choice.is-primary:hover{background:#c4fac0;color:#122019}
+.branching-extra{margin-top:14px;color:var(--bloom-faint);font-size:12px;min-height:18px}
+.branching-extra a{color:var(--bloom-pop);text-decoration:underline;text-underline-offset:3px}
+.branching-foot{font:500 11px ui-monospace,Consolas,monospace;letter-spacing:.01em;color:var(--bloom-faint)}
+.branching-foot a,.branching-home-link{border:0;background:none;padding:9px 4px;color:var(--bloom-faint);text-decoration:none;cursor:pointer;white-space:nowrap}
+.branching-foot a:hover,.branching-home-link:hover{color:var(--bloom-pop)}
+.branching-foot>span{margin-inline:auto}
+@keyframes branching-bloom{from{opacity:.2;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes branching-cat-curiosity{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-2px)}}
+@keyframes branching-orbit{0%,100%{opacity:.24;transform:translate(0,0)}50%{opacity:1;transform:translate(3px,-5px)}}
+@media(max-width:580px){
+ .branching-home{padding:18px 17px 12px}
+ .branching-topnote{font-size:10px}
+ .branching-cat{width:150px;height:113px}
+ .branching-home h1{font-size:clamp(29px,8vw,45px)}
+ .branching-description{margin-top:12px;font-size:14px}
+ .branching-choices{margin-top:22px;gap:9px;max-width:380px}
+ .branching-choice{padding:12px 16px;min-height:43px}
+ .branching-foot{font-size:10px}
+}
+@media(max-height:670px){
+ .branching-home{padding-top:16px;padding-bottom:10px}
+ .branching-cat{height:75px;width:120px;margin-bottom:0}
+ .branching-kicker{margin-bottom:8px}
+ .branching-description{margin-top:9px}
+ .branching-status{margin-top:8px}
+ .branching-choices{margin-top:17px}
+ .branching-extra{margin-top:7px}
+}
+@media(max-height:460px){
+ /* Exception for extreme landscape phones and large text zoom: never clip consent or choices. */
+ .branching-home{overflow-y:auto}
+ .branching-stage{min-height:max-content;padding:20px 0}
+ .branching-cat{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .branching-home *, .branching-home *::before, .branching-home *::after{animation:none!important;transition:none!important}
+}
+
+/* This preference belongs to the browser, not to an account or PoliC. */
+.branching-preference-button{
+  flex:0 1 195px;align-self:center;margin-left:auto;padding:10px 8px;
+  background:transparent;border:1px solid #325b6a;border-radius:6px;
+  color:#aed9e7;font:500 11px/1.4 ui-monospace,Consolas,monospace;
+  text-align:center;cursor:pointer;
+}
+.branching-preference-button:hover{background:#163449;color:#e1faff}
+.branching-preference-button:focus-visible{outline:2px solid #9de7e0;outline-offset:2px}
+.branching-workspace-shortcut{font-size:11px!important;color:var(--bloom-pop)!important}
+.branching-foot{flex-wrap:wrap}
+@media(max-width:720px){
+  .main-nav{flex-wrap:wrap}
+  .branching-preference-button{flex:1 1 100%;margin:3px 0 8px;text-align:left}
+  .branching-foot{gap:5px 12px}
+  .branching-foot>span{order:4;flex:1 1 100%;text-align:center;margin:0}
+}
