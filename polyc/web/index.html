@@ -8,6 +8,8 @@
   <title>PoliC@home · Your compute, your consent</title>
   <link rel="stylesheet" href="/web/style.css">
   <script type="module" src="/web/app.js"></script>
+  <link rel="stylesheet" href="/web/featured-cats.css">
+  <script type="module" src="/web/featured-cats.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#contribute">Skip to Catnap choices</a>
@@ -27,10 +29,12 @@
       <div class="visitor-hero">
         <div class="hero-copy">
           <div class="eyebrow">VOLUNTARY COMPUTING · YOUR CHOICE</div>
-          <h1>Contribute your Compute, <em>Cultivate the Commons.</em></h1>
-          <p class="intro">Help with computing projects you choose, under rules you set. Your personal <strong>PoliC</strong> is your permission slip—not the Commons' permission to take over your computer.</p>
+          <h1>Your computer. Your rules. <em>Our common future.</em></h1>
+          <p class="hero-tagline">Contribute your Compute, Cultivate the Commons.</p>
+          <p class="intro">Discover projects that could benefit from shared computing power. Choose what you believe in and what you're comfortable offering. Your <strong>PoliC</strong> is your permission slip, never a surrender of your machine.</p>
           <div class="hero-actions">
-            <a class="hero-primary" href="#contribute">Set up browser Catnap <span aria-hidden="true">→</span></a>
+            <a class="hero-primary" href="#featured-cats">Meet the Cats <span aria-hidden="true">→</span></a>
+            <a class="hero-secondary" href="#contribute">Set up browser Catnap</a>
             <a class="hero-secondary" href="#before-you-decide">Understand before I consent</a>
           </div>
           <div class="no-autostart"><span aria-hidden="true">◉</span> Visiting, browsing and previewing <strong>never start Catnap.</strong></div>
@@ -38,6 +42,25 @@
 
       </div>
 
+      <!-- FEATURED CATS GALLERY: discovery only; never authorizes execution -->
+      <section id="featured-cats" class="featured-cats" aria-labelledby="featured-cats-title">
+        <div class="featured-cats-head">
+          <div>
+            <div class="eyebrow">DISCOVER FIRST · CONSENT LATER</div>
+            <h2 id="featured-cats-title">Meet the Cats</h2>
+            <p>Explore potential work before committing your computer. A Cat is a project; a Catbox is the sandbox that might run it. Some examples are ideas, not available workloads.</p>
+          </div>
+          <div class="featured-cats-filters" role="group" aria-label="Filter featured Cats">
+            <button type="button" data-featured-filter="all" aria-pressed="true">All Cats</button>
+            <button type="button" data-featured-filter="pilot" aria-pressed="false">Pilot</button>
+            <button type="button" data-featured-filter="concept" aria-pressed="false">Concepts</button>
+          </div>
+        </div>
+        <p id="featuredCatsStatus" class="featured-cats-status" role="status" aria-live="polite">Loading the featured collection…</p>
+        <div id="featuredCatsGrid" class="featured-cats-grid" aria-label="Featured Cats"></div>
+        <p class="featured-cats-disclaimer">Featured means editorially selected, not approved to run or trusted by you. Actual eligible work is determined separately by Commons approval, creator trust, and your PoliC. Today's browser pilot runs only approved, matching SHA-256 tasks.</p>
+      </section>
+      <!-- END FEATURED CATS GALLERY -->
       <section id="before-you-decide" class="preflight" aria-labelledby="before-title">
         <div class="preflight-head"><div><div class="eyebrow">BEFORE YOU CONSENT</div><h2 id="before-title">Catnap in three steps.</h2></div><span class="preflight-state">Browser Catnap · no installation</span></div>
         <div class="truth-grid" role="tablist" aria-label="Three things to understand about Catnap">

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "heading": "Meet the Cats",
+  "introduction": "Explore the projects a computing commons can support. Browsing does not enroll you or start Catnap.",
+  "cats": [
+    {
+      "id": "sha256-chain-pilot",
+      "name": "The first Catnap",
+      "tagline": "Watch a deliberately small computation travel through the Commons.",
+      "description": "The current browser pilot performs a bounded, signed SHA-256 hash-chain task in a JavaScript Web Worker. Its purpose is to demonstrate consent checks, task leasing, verification and receipts—not to claim a scientific breakthrough.",
+      "contribution": "If an approved Cat matches your personal PoliC, your browser can help complete short hashing tasks after you separately enroll and press Start Catnap.",
+      "category": "Learning & verification",
+      "stage": "pilot",
+      "runtime": "Browser CPU",
+      "availability": "Requires an approved matching Cat and your explicit consent",
+      "review": "Featured for explanation; not an approval or trust decision",
+      "repo_url": "https://github.com/deifius/PoliCatHome",
+      "catbox_url": "/web/participate.html#catbox",
+      "learn_url": "/web/participate.html",
+      "source_ref": "main",
+      "featured": true
+    },
+    {
+      "id": "open-climate-validation",
+      "name": "Open climate validation",
+      "tagline": "A possible future Cat for checking open environmental predictions.",
+      "description": "Illustrative project: compare archived forecasts with public observations and report reproducible error metrics. No such general workload is offered by this browser pilot.",
+      "contribution": "A future Catbox might process publicly licensed datasets in bounded batches, with terms and resource limits reviewed before any execution.",
+      "category": "Earth science",
+      "stage": "concept",
+      "runtime": "Future Catbox",
+      "availability": "Concept only — not available for Catnap",
+      "review": "Illustrative idea; not submitted or approved",
+      "repo_url": null,
+      "catbox_url": null,
+      "learn_url": null,
+      "source_ref": null,
+      "featured": true
+    },
+    {
+      "id": "cultural-archive-research",
+      "name": "Cultural archive research",
+      "tagline": "A possible future Cat for permissioned digital preservation.",
+      "description": "Illustrative project: help researchers organize openly licensed or permissioned cultural material with auditable provenance and rights-aware participation.",
+      "contribution": "Future contributors could opt into narrowly specified tasks only after a Cat has a public repository, signed constitution, reviewed Catbox and compatible worker runtime.",
+      "category": "Culture & preservation",
+      "stage": "concept",
+      "runtime": "Future Catbox",
+      "availability": "Concept only — not available for Catnap",
+      "review": "Illustrative idea; not submitted or approved",
+      "repo_url": null,
+      "catbox_url": null,
+      "learn_url": null,
+      "source_ref": null,
+      "featured": true
+    }
+  ]
+}
